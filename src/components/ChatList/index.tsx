@@ -94,7 +94,7 @@ const ChatList: React.FC<IChatListProps> = ({
   };
   useEffect(() => {
     ChannelRepository.Membership.getMembers(
-      { channelId: chatId },
+      { channelId: chatId, includeDeleted: false },
       ({ data: members }) => {
         if (chatMemberNumber === 2 && members) {
           setOneOnOneChatObject(members);
