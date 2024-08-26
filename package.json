@@ -174,7 +174,7 @@
     ]
   },
   "dependencies": {
-    "@amityco/ts-sdk-react-native": "^6.29.1",
+    "@amityco/ts-sdk-react-native": "6.29.3-fe4e045.0",
     "@reduxjs/toolkit": "^2.2.5",
     "i18next": "22.4.10",
     "moment": "2.29.4",
