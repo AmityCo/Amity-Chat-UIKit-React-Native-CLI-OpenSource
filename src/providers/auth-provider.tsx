@@ -1,9 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, type FC } from 'react';
-import { Client } from '@amityco/ts-sdk-react-native';
 import type { AuthContextInterface } from '../types/auth.interface';
 import { Alert, Platform } from 'react-native';
 import type { IAmityUIkitProvider } from './amity-ui-kit-provider';
+import { Client } from '@amityco/ts-sdk-react-native';
+import connectionStateSlice from '../redux/slices/ConnectionStateSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
 
 export const AuthContext = React.createContext<AuthContextInterface>({
   client: {},
@@ -28,10 +31,14 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
   authToken,
   fcmToken,
 }: IAmityUIkitProvider) => {
+  const dispatch = useDispatch();
   const [error, setError] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [sessionState, setSessionState] = useState('');
+  const { connectionState } = useSelector(
+    (state: RootState) => state.connectionState
+  );
 
   const client: Amity.Client = Client.createClient(apiKey, apiRegion, {
     apiEndpoint: { http: apiEndpoint },
@@ -43,6 +50,26 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
       renewal.renew();
     },
   };
+
+  useEffect(() => {
+    const unsubscribe = Client.onRTEConnectionStateChange((state) => {
+      dispatch(
+        connectionStateSlice.actions.updateConnectionState({
+          connectionState: state,
+        })
+      );
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (connectionState === 'disconnected') {
+      Client.getActiveClient().mqtt?.reconnect();
+    }
+  }, [connectionState]);
 
   useEffect(() => {
     return Client.onSessionStateChange((state: Amity.SessionStates) =>

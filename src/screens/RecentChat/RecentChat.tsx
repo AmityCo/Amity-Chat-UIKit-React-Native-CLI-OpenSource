@@ -30,6 +30,9 @@ import recentChatSlice from '../../redux/slices/RecentChatSlice';
 export default function RecentChat() {
   const { client, isConnected, error: loginError, sessionState } = useAuth();
   const { channelList } = useSelector((state: RootState) => state.recentChat);
+  const { connectionState } = useSelector(
+    (state: RootState) => state.connectionState
+  );
 
   const { updateRecentChat, clearChannelList } = recentChatSlice.actions;
   const dispatch = useDispatch();
@@ -81,16 +84,18 @@ export default function RecentChat() {
 
     try {
       if (isConnected) {
-        unsubscibe = ChannelRepository.getChannels(
-          { sortBy: 'lastActivity', limit: 15, membership: 'member' },
-          (value) => {
-            setChannelData(value);
+        if (connectionState === 'connected') {
+          unsubscibe = ChannelRepository.getChannels(
+            { sortBy: 'lastActivity', limit: 15, membership: 'member' },
+            (value) => {
+              setChannelData(value);
 
-            if (!value.loading) {
-              setLoadChannel(false);
+              if (!value.loading) {
+                setLoadChannel(false);
+              }
             }
-          }
-        );
+          );
+        }
       }
     } catch (error) {
       console.log('error query channels', error);
@@ -99,7 +104,7 @@ export default function RecentChat() {
     return () => {
       unsubscibe?.();
     };
-  }, [isConnected]);
+  }, [isConnected, connectionState]);
 
   useEffect(() => {
     const formattedChannelObjects: IChatListProps[] = channels.map(

@@ -1,10 +1,12 @@
 import { Store, configureStore } from '@reduxjs/toolkit';
 
 import RecentChatSlice from '../slices/RecentChatSlice';
+import connectionStateSlice from '../slices/ConnectionStateSlice';
 
 export const store: Store = configureStore({
   reducer: {
     recentChat: RecentChatSlice.reducer,
+    connectionState: connectionStateSlice.reducer,
   },
 });
 
