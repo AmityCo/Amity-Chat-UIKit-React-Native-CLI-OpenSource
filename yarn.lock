@@ -16,7 +16,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amityco/react-native-cli-chat-ui-kit-example@workspace:example"
   dependencies:
-    "@amityco/ts-sdk-react-native": ^6.32.4
+    "@amityco/ts-sdk-react-native": ^6.36.0
     "@babel/core": ^7.20.0
     "@babel/preset-env": ^7.20.0
     "@babel/runtime": ^7.20.0
@@ -99,30 +99,6 @@ __metadata:
     react-native-svg: "*"
   languageName: unknown
   linkType: soft
-
-"@amityco/ts-sdk-react-native@npm:^6.32.4":
-  version: 6.32.4
-  resolution: "@amityco/ts-sdk-react-native@npm:6.32.4"
-  dependencies:
-    "@react-native-async-storage/async-storage": ^1.17.7
-    "@react-native-community/netinfo": ^9.4.1
-    agentkeepalive: ^4.2.1
-    axios: ^1.2.3
-    debug: ^4.3.4
-    hls.js: ^1.4.10
-    js-base64: ^3.7.2
-    mime: 3.0.0
-    mitt: ^3.0.0
-    mqtt: ^4.3.7
-    object-hash: ^3.0.0
-    react-native-uuid: ^2.0.1
-    socket.io-client: 2.2.0
-    ts-jest: ^28.0.3
-  peerDependencies:
-    react-native: ">=0.70.13"
-  checksum: ff1637cb9d23b79cff9eab073662ae6fd79eaaed10b053f52582281ec8c6efb5adf849522d25538e3d5df8ef5cba85ddbe33c7c92ab5d3299439b862cf85dfd8
-  languageName: node
-  linkType: hard
 
 "@amityco/ts-sdk-react-native@npm:^6.36.0":
   version: 6.36.0
