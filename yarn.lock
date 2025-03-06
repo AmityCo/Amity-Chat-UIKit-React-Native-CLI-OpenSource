@@ -44,7 +44,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amityco/react-native-cli-chat-ui-kit@workspace:."
   dependencies:
-    "@amityco/ts-sdk-react-native": ^6.32.4
+    "@amityco/ts-sdk-react-native": ^6.36.0
     "@commitlint/config-conventional": ^17.0.2
     "@evilmartians/lefthook": ^1.5.0
     "@react-native-async-storage/async-storage": ^1.22.3
@@ -86,7 +86,7 @@ __metadata:
     turbo: ^1.10.7
     typescript: ^5.2.2
   peerDependencies:
-    "@amityco/ts-sdk-react-native": ^6.32.4
+    "@amityco/ts-sdk-react-native": ^6.36.0
     "@react-native-firebase/app": ^20.1.0
     "@react-native-firebase/messaging": ^20.1.0
     "@react-navigation/native": "*"
@@ -121,6 +121,30 @@ __metadata:
   peerDependencies:
     react-native: ">=0.70.13"
   checksum: ff1637cb9d23b79cff9eab073662ae6fd79eaaed10b053f52582281ec8c6efb5adf849522d25538e3d5df8ef5cba85ddbe33c7c92ab5d3299439b862cf85dfd8
+  languageName: node
+  linkType: hard
+
+"@amityco/ts-sdk-react-native@npm:^6.36.0":
+  version: 6.36.0
+  resolution: "@amityco/ts-sdk-react-native@npm:6.36.0"
+  dependencies:
+    "@react-native-async-storage/async-storage": ^1.17.7
+    "@react-native-community/netinfo": ^9.4.1
+    agentkeepalive: ^4.2.1
+    axios: ^1.2.3
+    debug: ^4.3.4
+    hls.js: ^1.4.10
+    js-base64: ^3.7.2
+    mime: 3.0.0
+    mitt: ^3.0.0
+    mqtt: ^4.3.7
+    object-hash: ^3.0.0
+    react-native-uuid: ^2.0.1
+    socket.io-client: 2.2.0
+    ts-jest: ^28.0.3
+  peerDependencies:
+    react-native: ">=0.70.13"
+  checksum: c9aea88b01d1bcc426b49603ea1b9a73bb80dd1d8140f93fb06e7bf51200fff3c7802516af73d98313fbcf1ee9f1ee6db18d08c03de57ebe7895ce5b8920398d
   languageName: node
   linkType: hard
 
