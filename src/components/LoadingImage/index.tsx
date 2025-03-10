@@ -1,39 +1,43 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Image, Text, ActivityIndicator, type StyleProp, type ImageStyle } from 'react-native';
-import * as Progress from 'react-native-progress';
 import {
-  uploadImageFile,
-} from '../../providers/file-provider';
+  View,
+  Image,
+  Text,
+  ActivityIndicator,
+  type StyleProp,
+  type ImageStyle,
+} from 'react-native';
+import * as Progress from 'react-native-progress';
+import { uploadImageFile } from '../../providers/file-provider';
 import { createStyles } from './styles';
 
 interface OverlayImageProps {
   source: string;
   onClose?: (originalPath: string) => void;
-  onLoadFinish?: (
-    fileId: string,
-    originalPath: string
-  ) => void;
+  onLoadFinish?: (fileId: string, originalPath: string) => void;
   index?: number;
   isUploaded?: boolean;
   fileId?: string;
-  isShowSending?: boolean
+  isShowSending?: boolean;
   containerStyle?: StyleProp<ImageStyle> | StyleProp<ImageStyle>;
 }
+
 const LoadingImage = ({
   source,
   onLoadFinish,
   isShowSending = true,
-  containerStyle
+  containerStyle,
 }: OverlayImageProps) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isProcess, setIsProcess] = useState<boolean>(false);
-  const [isFinish, setIsFinish] = useState(false)
+  const [isFinish, setIsFinish] = useState(false);
   const styles = createStyles();
 
   const handleLoadEnd = () => {
     setLoading(false);
   };
+
   useEffect(() => {
     if (progress === 100) {
       setIsProcess(true);
@@ -41,29 +45,22 @@ const LoadingImage = ({
   }, [progress]);
 
   const uploadFileToAmity = useCallback(async () => {
-
-    if (!isFinish ) {
+    if (!isFinish) {
       const file: Amity.File<any>[] = await uploadImageFile(
         source,
         (percent: number) => {
           setProgress(percent);
         },
         true
-
       );
       if (file) {
-        setIsFinish(true)
+        setIsFinish(true);
         setIsProcess(false);
         handleLoadEnd();
-        onLoadFinish &&
-          onLoadFinish(
-            file[0]?.fileId as string,
-            source
-          );
+        onLoadFinish && onLoadFinish(file[0]?.fileId as string, source);
       }
     }
-
-  }, [isFinish]);
+  }, [isFinish, source]);
 
   useEffect(() => {
     if (isFinish) {
@@ -71,10 +68,10 @@ const LoadingImage = ({
     } else {
       uploadFileToAmity();
     }
-  }, [isFinish]);
+  }, [isFinish, uploadFileToAmity]);
 
   return (
-    <View key={source} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: source }}
@@ -97,13 +94,15 @@ const LoadingImage = ({
             )}
           </View>
         )}
-
       </View>
-      {isShowSending && loading && <View style={styles.loadingRow}>
-        <Text style={styles.loadingText}>sending</Text>
-        <ActivityIndicator size={20} color={'gray'} />
-      </View>}
+      {isShowSending && loading && (
+        <View style={styles.loadingRow}>
+          <Text style={styles.loadingText}>sending</Text>
+          <ActivityIndicator size={20} color={'gray'} />
+        </View>
+      )}
     </View>
   );
 };
+
 export default LoadingImage;
