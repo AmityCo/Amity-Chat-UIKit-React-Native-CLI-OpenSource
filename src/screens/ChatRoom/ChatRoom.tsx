@@ -115,6 +115,8 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const [messagesData, setMessagesData] =
     useState<Amity.LiveCollection<Amity.Message>>();
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
+  const [displayImages, setDisplayImages] = useState<IDisplayImage[]>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const theme = useTheme() as MyMD3Theme;
 
   const {
@@ -133,7 +135,6 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [visibleFullImage, setIsVisibleFullImage] = useState<boolean>(false);
   const [fullImage, setFullImage] = useState<string>('');
-  const [displayImages, setDisplayImages] = useState<IDisplayImage[]>([]);
   const [editMessageModal, setEditMessageModal] = useState<boolean>(false);
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
@@ -209,13 +210,14 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
         messagesArr.map(async (item) => {
           if ((item?.data as Record<string, any>)?.fileId) {
             const { userObject } = await getUserInfo(item.creatorId);
+            const fileId = (item?.data as Record<string, any>).fileId;
 
             return {
               _id: item.messageId,
               text: '',
-              image: `https://api.${apiRegion}.amity.co/api/v3/files/${
-                (item?.data as Record<string, any>).fileId
-              }/download`,
+              image: fileId
+                ? `https://api.${apiRegion}.amity.co/api/v3/files/${fileId}/download`
+                : '',
               createdAt: item.createdAt as string,
               editedAt: item.editedAt as string,
               user: {
@@ -312,7 +314,11 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
   const openFullImage = (image: string, messageType: string) => {
     if (messageType === 'image' || messageType === 'file') {
-      const fullSizeImage: string = image + '?size=full';
+      if (!image) return; // Guard against empty image URLs
+      // Use original image URL if ?size=full parameter doesn't work correctly
+      const fullSizeImage = image.includes('?')
+        ? `${image}&size=full`
+        : `${image}?size=full`;
       setFullImage(fullSizeImage);
       setIsVisibleFullImage(true);
     }
@@ -413,7 +419,8 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
               >
                 <MenuTrigger
                   onAlternativeAction={() =>
-                    openFullImage(message.image as string, message.messageType)
+                    message.image &&
+                    openFullImage(message.image, message.messageType)
                   }
                   customStyles={{
                     triggerTouchable: { underlayColor: 'transparent' },
@@ -553,9 +560,10 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
       result.assets[0] !== null &&
       result.assets[0]
     ) {
-      const imagesArr: string[] = [...imageMultipleUri];
-      imagesArr.push(result.assets[0].uri as string);
-      setImageMultipleUri(imagesArr);
+      setImageMultipleUri((prevUris) => [
+        ...prevUris,
+        result.assets[0].uri as string,
+      ]);
     }
   };
 
@@ -571,38 +579,55 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   };
 
   const handleOnFinishImage = async (fileId: string, originalPath: string) => {
-    createImageMessage(fileId);
+    // Create message with the uploaded file
+    await createImageMessage(fileId);
+
+    // Remove the processed image from both arrays
     setTimeout(() => {
       setDisplayImages((prevData) => {
         const newData: IDisplayImage[] = prevData.filter(
           (item: IDisplayImage) => item.url !== originalPath
-        ); // Filter out objects containing the desired value
-        return newData; // Update the state with the filtered array
+        );
+        return newData;
       });
+
       setImageMultipleUri((prevData) => {
-        const newData = prevData.filter((url: string) => url !== originalPath); // Filter out objects containing the desired value
-        return newData; // Update the state with the filtered array
+        const newData = prevData.filter((url: string) => url !== originalPath);
+        return newData;
       });
+
+      // Set uploading state to false to allow processing next image
+      setIsUploading(false);
     }, 0);
   };
 
+  // Process image queue - this useEffect will manage which image to upload next
   useEffect(() => {
-    if (imageMultipleUri.length > 0 && displayImages.length === 0) {
-      const imagesObject: IDisplayImage[] = imageMultipleUri.map(
-        (url: string) => {
-          const fileName: string = url.substring(url.lastIndexOf('/') + 1);
+    const processNextImage = () => {
+      // If we're uploading or there are no images in queue, do nothing
+      if (isUploading || imageMultipleUri.length === 0) return;
 
-          return {
-            url: url,
-            fileName: fileName,
-            fileId: '',
-            isUploaded: false,
-          };
-        }
+      // Get the first image from the queue
+      const nextImageUrl = imageMultipleUri[0];
+      const fileName = nextImageUrl.substring(
+        nextImageUrl.lastIndexOf('/') + 1
       );
-      setDisplayImages([imagesObject[0]] as IDisplayImage[]);
-    }
-  }, [imageMultipleUri]);
+
+      // Create an image object for the first image in the queue
+      const nextImageObject: IDisplayImage = {
+        url: nextImageUrl,
+        fileName,
+        fileId: '',
+        isUploaded: false,
+      };
+
+      // Set the image for upload and mark as uploading
+      setDisplayImages([nextImageObject]);
+      setIsUploading(true);
+    };
+
+    processNextImage();
+  }, [imageMultipleUri, isUploading]);
 
   const pickImage = async () => {
     const result: ImagePicker.ImagePickerResponse = await launchImageLibrary({
@@ -615,11 +640,12 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
       const imageUriArr: string[] = selectedImages.map(
         (item: Asset) => item.uri
       ) as string[];
-      const imagesArr = [...imageMultipleUri];
-      const totalImages = imagesArr.concat(imageUriArr);
-      setImageMultipleUri(totalImages);
+
+      // Add all selected images to the queue
+      setImageMultipleUri((prevUris) => [...prevUris, ...imageUriArr]);
     }
   };
+
   const renderLoadingImages = useMemo(() => {
     return (
       <View style={styles.loadingImage}>
@@ -781,6 +807,8 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
         imageIndex={0}
         visible={visibleFullImage}
         onRequestClose={() => setIsVisibleFullImage(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
       />
       <EditMessageModal
         visible={editMessageModal}
