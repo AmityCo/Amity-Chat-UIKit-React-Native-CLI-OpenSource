@@ -101,6 +101,9 @@ export interface IDisplayImage {
 }
 const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const { channelList } = useSelector((state: RootState) => state.recentChat);
+  const { connectionState } = useSelector(
+    (state: RootState) => state.connectionState
+  );
 
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -163,40 +166,41 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
       let disposers: Amity.Unsubscriber[] = [];
       startRead();
 
-      disposers.push(
-        MessageRepository.getMessages(
-          { subChannelId: channelId, limit: 10, includeDeleted: true },
-          ({ data: messages, loading, error, onNextPage, hasNextPage }) => {
-            if (!loading && messages) {
-              // filter syned message since UIKIT did not support unsync message yet
-              const syncedMessages = messages.filter(
-                (message) =>
-                  !message.syncState || message.syncState === 'synced'
-              );
+      if (connectionState === 'connected') {
+        disposers.push(
+          MessageRepository.getMessages(
+            { subChannelId: channelId, limit: 10, includeDeleted: true },
+            ({ data: messages, loading, error, onNextPage, hasNextPage }) => {
+              if (!loading && messages) {
+                // filter syned message since UIKIT did not support unsync message yet
+                const syncedMessages = messages.filter(
+                  (message) =>
+                    !message.syncState || message.syncState === 'synced'
+                );
 
-              // mark the last message as read
-              if (syncedMessages.length > 0) {
-                const lastMessage = messages[0];
-                lastMessage.markRead();
+                // mark the last message as read
+                if (syncedMessages.length > 0) {
+                  const lastMessage = messages[0];
+                  lastMessage.markRead();
+                }
+
+                setMessagesData({
+                  data: syncedMessages,
+                  loading,
+                  error,
+                  onNextPage,
+                  hasNextPage,
+                });
               }
-
-              setMessagesData({
-                data: syncedMessages,
-                loading,
-                error,
-                onNextPage,
-                hasNextPage,
-              });
             }
-          }
-        )
-      );
-
+          )
+        );
+      }
       return () => {
         disposers.forEach((fn) => fn());
         stopRead();
       };
-    }, [channelId])
+    }, [channelId, connectionState])
   );
 
   const chatFormatter = async () => {
@@ -209,10 +213,9 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             return {
               _id: item.messageId,
               text: '',
-              image:
-                `https://api.${apiRegion}.amity.co/api/v3/files/${
-                  (item?.data as Record<string, any>).fileId
-                }/download` ?? undefined,
+              image: `https://api.${apiRegion}.amity.co/api/v3/files/${
+                (item?.data as Record<string, any>).fileId
+              }/download`,
               createdAt: item.createdAt as string,
               editedAt: item.editedAt as string,
               user: {
