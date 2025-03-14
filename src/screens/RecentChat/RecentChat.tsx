@@ -124,7 +124,7 @@ export default function RecentChat() {
           chatId: item.channelId ?? '',
           chatName: item.displayName ?? '',
           chatMemberNumber: item.memberCount ?? 0,
-          unReadMessage: item.unreadCount ?? 0,
+          unReadMessage: item.subChannelsUnreadCount ?? 0,
           messageDate: dateDisplay ?? '',
           channelType: item.type ?? '',
           avatarFileId: item.avatarFileId,

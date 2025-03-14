@@ -22,26 +22,23 @@ export type SelectUserList = {
 };
 
 export default function SelectMembers() {
-
-  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>([]);
+  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(
+    []
+  );
   const [selectedUserList, setSelectedUserList] = useState<UserInterface[]>([]);
-  const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
+  const [usersObject, setUsersObject] =
+    useState<Amity.LiveCollection<Amity.User>>();
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
-
   const queryAccounts = (text: string = '') => {
-
-    UserRepository.getUsers(
+    UserRepository.searchUserByDisplayName(
       { displayName: text, limit: 15 },
       (data) => {
-        setUsersObject(data)
-
+        setUsersObject(data);
       }
     );
-
-
   };
   const handleChange = (text: string) => {
     setSearchTerm(text);
@@ -57,64 +54,71 @@ export default function SelectMembers() {
   };
 
   const createSectionGroup = () => {
-
-    const sectionUserArr =userArr.map((item) => {
-    return { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
-    })
-    setSectionedUserList(sectionUserArr)
-  }
+    const sectionUserArr = userArr.map((item) => {
+      return {
+        userId: item.userId,
+        displayName: item.displayName as string,
+        avatarFileId: item.avatarFileId as string,
+      };
+    });
+    setSectionedUserList(sectionUserArr);
+  };
 
   useEffect(() => {
-    createSectionGroup()
-  }, [userArr])
+    createSectionGroup();
+  }, [userArr]);
 
   useEffect(() => {
     if (searchTerm.length === 0) {
-      queryAccounts()
+      queryAccounts();
     }
-
-  }, [searchTerm])
-
+  }, [searchTerm]);
 
   const onUserPressed = (user: UserInterface) => {
-    const isIncluded = selectedUserList.some(item => item.userId === user.userId)
+    const isIncluded = selectedUserList.some(
+      (item) => item.userId === user.userId
+    );
     if (isIncluded) {
-      const removedUser = selectedUserList.filter(item => item.userId !== user.userId)
-      setSelectedUserList(removedUser)
+      const removedUser = selectedUserList.filter(
+        (item) => item.userId !== user.userId
+      );
+      setSelectedUserList(removedUser);
     } else {
-      setSelectedUserList(prev => [...prev, user])
+      setSelectedUserList((prev) => [...prev, user]);
     }
-
   };
 
-
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-
     const selectedUser = selectedUserList.some(
       (user) => user.userId === item.userId
     );
-    const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
+    const userObj: UserInterface = {
+      userId: item.userId,
+      displayName: item.displayName as string,
+      avatarFileId: item.avatarFileId as string,
+    };
     return (
-      <UserItem showThreeDot={false} user={userObj} isCheckmark={selectedUser} onPress={onUserPressed} />
+      <UserItem
+        showThreeDot={false}
+        user={userObj}
+        isCheckmark={selectedUser}
+        onPress={onUserPressed}
+      />
     );
   };
 
-
-
   const handleLoadMore = () => {
     if (onNextPage) {
-      onNextPage()
+      onNextPage();
     }
-  }
+  };
 
   const onDeleteUserPressed = (user: UserInterface) => {
-    const removedUser = selectedUserList.filter(item => item !== user)
-    setSelectedUserList(removedUser)
-  }
-
+    const removedUser = selectedUserList.filter((item) => item !== user);
+    setSelectedUserList(removedUser);
+  };
 
   return (
-
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton}>
@@ -123,8 +127,16 @@ export default function SelectMembers() {
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Select Member</Text>
         </View>
-        <TouchableOpacity disabled={selectedUserList.length === 0} >
-          <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>Done</Text>
+        <TouchableOpacity disabled={selectedUserList.length === 0}>
+          <Text
+            style={[
+              selectedUserList.length > 0
+                ? styles.doneText
+                : styles.disabledDone,
+            ]}
+          >
+            Done
+          </Text>
         </TouchableOpacity>
       </View>
       <View style={styles.inputWrap}>
@@ -149,14 +161,12 @@ export default function SelectMembers() {
         <View />
       )}
       <FlatList
-        data={ sectionedUserList}
+        data={sectionedUserList}
         renderItem={renderItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         keyExtractor={(item) => item.userId}
-
       />
     </View>
-
   );
 }
