@@ -96,7 +96,7 @@ const ChatList: React.FC<IChatListProps> = ({
     ChannelRepository.Membership.getMembers(
       { channelId: chatId },
       ({ data: members }) => {
-        if (chatMemberNumber === 2 && members) {
+        if (chatMemberNumber === 2 && members && channelType === 'conversation') {
           setOneOnOneChatObject(members);
         } else if (members) {
           setGroupChatObject(members);
