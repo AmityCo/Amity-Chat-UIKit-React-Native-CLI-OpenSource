@@ -1,5 +1,5 @@
 PODS:
-  - amityco-react-native-cli-chat-ui-kit (0.7.1):
+  - amityco-react-native-cli-chat-ui-kit (0.8.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
@@ -1137,10 +1137,11 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNScreens (3.29.0):
+  - RNScreens (4.10.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+    - React-RCTImage
   - RNSVG (14.1.0):
     - React-Core
   - SocketRocket (0.6.1)
@@ -1342,7 +1343,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  amityco-react-native-cli-chat-ui-kit: 09bbcae6c63eb79699d3a47b251c3a536691afcd
+  amityco-react-native-cli-chat-ui-kit: 68823dc72b6b9d89598c47321bc32a06ae098c36
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: f64d1e2ea739b4d8f7e4740cde18089cd97fe864
@@ -1408,7 +1409,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 9350c2956f996b3ff1ac7cfdb50901c113a27640
   RNFBApp: 2218806532c0cc83b41cbe5bd1ff42714dff9b3f
   RNFBMessaging: ea63b6bdd0f56647329616776b8b54cf891a3aea
-  RNScreens: 1174f55dd2f72abe45a4e48bf20e552feb051600
+  RNScreens: c4a0c92faca25f53aeabe44b26c8e4b690d9f9d1
   RNSVG: 6d5ed33b6635ed6d6ecb50744dcf127580c39ed5
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 805bf71192903b20fc14babe48080582fee65a80
