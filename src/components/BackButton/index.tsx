@@ -15,8 +15,12 @@ export default function BackButton({ onPress }: IBackBtn) {
   return (
     <TouchableOpacity
       onPress={() => {
-        navigation.goBack();
-        onPress && onPress();
+        if (onPress) {
+          onPress();
+        } else {
+          navigation.goBack();
+        }
+
       }}
     >
       <BackIcon color={theme.colors.base} />

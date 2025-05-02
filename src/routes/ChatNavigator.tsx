@@ -15,7 +15,12 @@ import { EditChatRoomDetail } from '../screens/EditChatDetail/EditChatRoomDetail
 import MemberDetail from '../screens/MemberDetail/MemberDetail';
 import ChatRoom from '../screens/ChatRoom/ChatRoom';
 
-export default function ChatNavigator() {
+interface INavigator {
+  screen?: string;
+  channelId?: string;
+}
+
+export default function ChatNavigator({ screen = 'RecentChat', channelId }: INavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
@@ -27,19 +32,21 @@ export default function ChatNavigator() {
             backgroundColor: 'white',
           },
         }}
+        initialRouteName={screen as keyof RootStackParamList}
       >
         <Stack.Screen
           name="RecentChat"
           component={RecentChat}
-          options={({}) => ({
-            title: '',
-          })}
+    
         />
         <Stack.Screen
           name="ChatRoom"
           options={{ headerShown: false }}
-          component={ChatRoom}
-        />
+        >
+          {({ navigation, route }) => (
+            <ChatRoom defaultChannelId={channelId} navigation={navigation} route={route} />
+          )}
+        </Stack.Screen>
         <Stack.Screen
           name="ChatDetail"
           component={ChatRoomSetting}
@@ -67,7 +74,7 @@ export default function ChatNavigator() {
           <Stack.Screen
             name="SelectMembers"
             component={SelectMembers}
-            options={({}) => ({
+            options={({ }) => ({
               title: '',
               headerShown: false,
             })}

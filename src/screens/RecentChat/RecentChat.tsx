@@ -51,23 +51,22 @@ export default function RecentChat() {
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  useEffect(() => {
+  const header = (
+    <View style={styles.topBar}>
+      <CustomText style={styles.titleText}>Chat</CustomText>
+      <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+        <AddChatIcon color={theme.colors.base} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Avoid calling setOptions repeatedly — only when necessary
+  useMemo(() => {
     navigation.setOptions({
-      header: () => (
-        <View style={styles.topBar}>
-          <CustomText style={styles.titleText}>Chat</CustomText>
-          <TouchableOpacity
-            onPress={() => {
-              setIsModalVisible(true);
-            }}
-          >
-            <AddChatIcon color={theme.colors.base} />
-          </TouchableOpacity>
-        </View>
-      ),
+      header: () => header,
       headerTitle: '',
     });
-  }, []);
+  }, [navigation, header]);
 
   useEffect(() => {
     if (sessionState === 'terminated') {

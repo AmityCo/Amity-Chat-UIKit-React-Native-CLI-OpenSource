@@ -1,9 +1,17 @@
 import AmityUiKitProvider from './providers/amity-ui-kit-provider';
-import RecentChat from './screens/RecentChat/RecentChat';
 import AmityUiKitChat from './routes/ChatNavigator';
+import React from 'react';
+
+interface ChatRoomProps {
+  defaultChannelId: string;
+}
+const ChatRoomPageScreen = ({ defaultChannelId }: ChatRoomProps) => {
+  return <AmityUiKitChat channelId={defaultChannelId} screen='ChatRoom' />
+}
+
 
 export {
   AmityUiKitProvider,
-  RecentChat,
+  ChatRoomPageScreen as ChatRoomPage,
   AmityUiKitChat,
 };
