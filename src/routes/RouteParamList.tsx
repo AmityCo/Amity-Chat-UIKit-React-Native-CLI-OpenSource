@@ -17,7 +17,7 @@ export type RootStackParamList = {
     groupChat?: IGroupChatObject;
   };
   MemberDetail: undefined;
-  EditChatDetail:  {
+  EditChatRoomDetail:  {
     channelId: string,
     groupChat?: IGroupChatObject;
   };

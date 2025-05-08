@@ -20,7 +20,7 @@ interface INavigator {
   channelId?: string;
 }
 
-export default function ChatNavigator({ screen = 'RecentChat', channelId }: INavigator) {
+export default function ChatNavigator({ screen = 'RecentChat' }: INavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
@@ -37,14 +37,14 @@ export default function ChatNavigator({ screen = 'RecentChat', channelId }: INav
         <Stack.Screen
           name="RecentChat"
           component={RecentChat}
-    
+
         />
         <Stack.Screen
           name="ChatRoom"
           options={{ headerShown: false }}
         >
-          {({ navigation, route }) => (
-            <ChatRoom defaultChannelId={channelId} navigation={navigation} route={route} />
+          {() => (
+            <ChatRoom />
           )}
         </Stack.Screen>
         <Stack.Screen
@@ -63,7 +63,7 @@ export default function ChatNavigator({ screen = 'RecentChat', channelId }: INav
           }}
         />
         <Stack.Screen
-          name="EditChatDetail"
+          name="EditChatRoomDetail"
           component={EditChatRoomDetail}
           options={{
             title: 'Edit Chat Detail',

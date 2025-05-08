@@ -28,9 +28,9 @@ import {
   type RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import type { RootStackParamList } from '../../routes/RouteParamList';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
 import moment from 'moment';
@@ -73,11 +73,6 @@ import { RootState } from '../../redux/store';
 import { IGroupChatObject } from '~/components/ChatList';
 import { UserInterface } from '~/types/user.interface';
 
-type ChatRoomScreenComponentType = React.FC<{
-  route: RouteProp<RootStackParamList, 'ChatRoom'>;
-  navigation: StackNavigationProp<RootStackParamList, 'ChatRoom'>;
-  defaultChannelId?: string;
-}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
@@ -103,8 +98,8 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
-const ChatRoom: ChatRoomScreenComponentType = ({ route, defaultChannelId }) => {
-
+const ChatRoom = ({ defaultChannelId = '' }) => {
+  const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>()
   const { channelList } = useSelector((state: RootState) => state.recentChat);
   const { connectionState } = useSelector(
     (state: RootState) => state.connectionState
@@ -117,7 +112,6 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route, defaultChannelId }) => {
   const [chatReceiver, setChatReceiver] = useState(chatReceiverParam);
   const [groupChat, setGroupChat] = useState(groupChatParam)
   const [channelId, setChannelId] = useState<string>(channelIdParam)
-
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
@@ -155,43 +149,43 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route, defaultChannelId }) => {
   }, [channelObject]);
 
   useEffect(() => {
-  if(groupChatObject){
-    const userArr: UserInterface[] = groupChatObject?.map((item) => {
-      return {
-        userId: item.userId as string,
-        displayName: item.user?.displayName as string,
-        avatarFileId: item.user?.avatarFileId as string,
+    if (groupChatObject) {
+      const userArr: UserInterface[] = groupChatObject?.map((item) => {
+        return {
+          userId: item.userId as string,
+          displayName: item.user?.displayName as string,
+          avatarFileId: item.user?.avatarFileId as string,
+        };
+      });
+      const groupChat: IGroupChatObject = {
+        users: userArr,
+        displayName: channelObject.displayName as string,
+        avatarFileId: channelObject.avatarFileId,
+        memberCount: channelObject.memberCount,
       };
-    });
-    const groupChat: IGroupChatObject = {
-      users: userArr,
-      displayName: channelObject.displayName as string,
-      avatarFileId: channelObject.avatarFileId,
-      memberCount: channelObject.memberCount,
-    };
-    setGroupChat(groupChat)
-    setGroupChatInfo({
-      displayName: channelObject?.displayName,
-      avatarFileId: channelObject?.avatarFileId,
-      memberCount: channelObject?.memberCount,
-    });
+      setGroupChat(groupChat)
+      setGroupChatInfo({
+        displayName: channelObject?.displayName,
+        avatarFileId: channelObject?.avatarFileId,
+        memberCount: channelObject?.memberCount,
+      });
 
-  }
-  if(oneOnOneChatObject){
-    const targetIndex: number = oneOnOneChatObject?.findIndex(
-      (item) => item.userId !== (client as Amity.Client).userId
-    );
-    const chatReceiver: UserInterface = {
+    }
+    if (oneOnOneChatObject) {
+      const targetIndex: number = oneOnOneChatObject?.findIndex(
+        (item) => item.userId !== (client as Amity.Client).userId
+      );
+      const chatReceiver: UserInterface = {
 
-      userId: oneOnOneChatObject[targetIndex]?.userId as string,
-      displayName: oneOnOneChatObject[targetIndex]?.user
-        ?.displayName as string,
-      avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
-    };
-    setChatReceiver(chatReceiver)
-  }
+        userId: oneOnOneChatObject[targetIndex]?.userId as string,
+        displayName: oneOnOneChatObject[targetIndex]?.user
+          ?.displayName as string,
+        avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
+      };
+      setChatReceiver(chatReceiver)
+    }
   }, [groupChatObject, oneOnOneChatObject])
-  
+
 
   const {
     data: messagesArr = [],
@@ -240,7 +234,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route, defaultChannelId }) => {
     useCallback(() => {
       let disposers: Amity.Unsubscriber[] = [];
       startRead();
-   
+
       if (connectionState === 'connected') {
         if (defaultChannelId && !channelIdParam) {
           queryChannelObject();
@@ -757,27 +751,28 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route, defaultChannelId }) => {
     setEditMessageText('');
     setEditMessageModal(false);
   };
-const goBack=()=>{
-  if(defaultChannelId){
-    navigation.navigate('RecentChat')
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'RecentChat' }],
-      })
-    );
-    setChannelId('')
-  }else{
-    navigation.goBack()
-  }
+  const goBack = () => {
+    if (defaultChannelId) {
+      navigation.navigate('RecentChat')
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'RecentChat' }],
+        })
+      );
+      setChannelId('')
+    } else {
+      navigation.goBack()
+    }
 
-;}
+    ;
+  }
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.topBarContainer} edges={['top']}>
         <View style={styles.topBar}>
           <View style={styles.chatTitleWrap}>
-            <BackButton onPress={goBack}/>
+            <BackButton onPress={goBack} />
 
             {chatReceiver ? (
               chatReceiver?.avatarFileId ? (
