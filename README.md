@@ -91,6 +91,52 @@ export default function App() {
   );
 }
 ```
+
+
+## Using Specific Screens from UIKit
+
+UIKit now supports importing and rendering individual screens. This gives you more control over how each screen is used in your app, making it easier to customize user flows and place screens exactly where you need them.
+
+#### 📦 Supported Screens
+
+You can now import and use the following screens individually:
+
+- [`ChatRoom`](#)
+- [`RecentChat`](#)
+
+> ✅ Make sure your screen component is wrapped with `AmityPageRenderer` at the root level.
+> 
+> ✅  `AmityPageRenderer` is only required when using screen components. It is not needed for the `AmityUiKitChat` component.
+
+### Usage
+
+```js
+import * as React from 'react';
+
+import {
+  AmityUiKitChat,
+  AmityUiKitProvider,
+  AmityPageRenderer,
+  ChatRoom,
+} from '@amityco/react-native-cli-chat-ui-kit';
+
+export default function App() {
+  return (
+    <AmityUiKitProvider
+      apiKey="API_KEY"
+      apiRegion="sg"
+      userId="userId"
+      displayName="displayName"
+    >
+      <AmityPageRenderer >
+        <ChatRoom defaultChannelId='CHANNEL_ID' />
+      </AmityPageRenderer>
+    </AmityUiKitProvider>
+  );
+}
+```
+
+
 ### Using Theme
 
 #### Using the default theme
