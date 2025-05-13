@@ -22,7 +22,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
     const { channelId, channelType, chatReceiver, groupChat } = route.params;
     const [showReportAlert, setShowReportAlert] = useState<boolean>(false);
     const handleGroupProfilePress = () => {
-        navigation.navigate('EditChatDetail', { navigation, channelId: channelId, groupChat: groupChat });
+        navigation.navigate('EditChatRoomDetail', { navigation, channelId: channelId, groupChat: groupChat });
     };
 
     const handleMembersPress = () => {

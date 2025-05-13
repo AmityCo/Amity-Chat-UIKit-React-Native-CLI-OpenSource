@@ -47,7 +47,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
 
   const styles = useStyles();
   const { apiRegion } = useAuth()
-  const route = useRoute<RouteProp<RootStackParamList, 'EditChatDetail'>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'EditChatRoomDetail'>>();
   const MAX_CHARACTER_COUNT = 100;
   const { channelId, groupChat } = route.params;
 
