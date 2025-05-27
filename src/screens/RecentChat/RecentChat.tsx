@@ -85,7 +85,12 @@ export default function RecentChat() {
       if (isConnected) {
         if (connectionState === 'connected') {
           unsubscibe = ChannelRepository.getChannels(
-            { sortBy: 'lastActivity', limit: 15, membership: 'member' },
+            {
+              sortBy: 'lastActivity',
+              limit: 15,
+              membership: 'member',
+              isDeleted: false,
+            },
             (value) => {
               setChannelData(value);
 

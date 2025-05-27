@@ -1,6 +1,6 @@
 {
   "name": "@amityco/react-native-cli-chat-ui-kit",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Chat UIKit",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -120,10 +120,10 @@
       "tagName": "v${version}"
     },
     "npm": {
-      "publish": true
+      "publish": false
     },
     "github": {
-      "release": true
+      "release": false
     },
     "plugins": {
       "@release-it/conventional-changelog": {
