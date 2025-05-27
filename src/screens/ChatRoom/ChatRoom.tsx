@@ -788,17 +788,17 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       );
     }
 
-    // Effect for handling deleted channel
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [channelId, connectionState]);
+
+  useEffect(() => {
     if (isDeletedChannel) {
       navigation.navigate('RecentChat');
       Alert.alert('Channel no longer exists');
     }
-
-    // Cleanup function
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [channelId, connectionState, navigation, isDeletedChannel]);
+  }, [channelId, isDeletedChannel]);
 
   return (
     <View style={styles.container}>
