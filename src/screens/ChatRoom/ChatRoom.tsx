@@ -99,7 +99,7 @@ export interface IDisplayImage {
   thumbNail?: string;
 }
 const ChatRoom = ({ defaultChannelId = '' }) => {
-  const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>()
+  const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
   const { channelList } = useSelector((state: RootState) => state.recentChat);
   const { connectionState } = useSelector(
     (state: RootState) => state.connectionState
@@ -107,11 +107,15 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  let { chatReceiver: chatReceiverParam, groupChat: groupChatParam, channelId: channelIdParam } = route.params ?? {};
+  let {
+    chatReceiver: chatReceiverParam,
+    groupChat: groupChatParam,
+    channelId: channelIdParam,
+  } = route.params ?? {};
   const { client, apiRegion } = useAuth();
   const [chatReceiver, setChatReceiver] = useState(chatReceiverParam);
-  const [groupChat, setGroupChat] = useState(groupChatParam)
-  const [channelId, setChannelId] = useState<string>(channelIdParam)
+  const [groupChat, setGroupChat] = useState(groupChatParam);
+  const [channelId, setChannelId] = useState<string>(channelIdParam);
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
@@ -119,11 +123,12 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
   const [displayImages, setDisplayImages] = useState<IDisplayImage[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [oneOnOneChatObject, setOneOnOneChatObject] = useState<Amity.Membership<'channel'>[]>();
-  const [groupChatObject, setGroupChatObject] = useState<Amity.Membership<'channel'>[]>();
-  const [channelObject, setChannelObject] = useState<Amity.Channel>()
+  const [oneOnOneChatObject, setOneOnOneChatObject] =
+    useState<Amity.Membership<'channel'>[]>();
+  const [groupChatObject, setGroupChatObject] =
+    useState<Amity.Membership<'channel'>[]>();
+  const [channelObject, setChannelObject] = useState<Amity.Channel>();
   const theme = useTheme() as MyMD3Theme;
-
 
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
@@ -131,17 +136,20 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         setChannelObject(channel);
       }
     });
-  }
+  };
 
   useEffect(() => {
     if (channelObject && !oneOnOneChatObject && !groupChatObject) {
       ChannelRepository.Membership.getMembers(
         { channelId: channelObject.channelId },
         ({ data: members }) => {
-          if (channelObject.memberCount === 2 && channelObject.type === 'conversation') {
-            setOneOnOneChatObject(prev => prev !== members && members);
+          if (
+            channelObject.memberCount === 2 &&
+            channelObject.type === 'conversation'
+          ) {
+            setOneOnOneChatObject((prev) => prev !== members && members);
           } else if (members) {
-            setGroupChatObject(prev => prev !== members && members);
+            setGroupChatObject((prev) => prev !== members && members);
           }
         }
       );
@@ -163,29 +171,26 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         avatarFileId: channelObject.avatarFileId,
         memberCount: channelObject.memberCount,
       };
-      setGroupChat(groupChat)
+      setGroupChat(groupChat);
       setGroupChatInfo({
         displayName: channelObject?.displayName,
         avatarFileId: channelObject?.avatarFileId,
         memberCount: channelObject?.memberCount,
       });
-
     }
     if (oneOnOneChatObject) {
       const targetIndex: number = oneOnOneChatObject?.findIndex(
         (item) => item.userId !== (client as Amity.Client).userId
       );
       const chatReceiver: UserInterface = {
-
         userId: oneOnOneChatObject[targetIndex]?.userId as string,
         displayName: oneOnOneChatObject[targetIndex]?.user
           ?.displayName as string,
         avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
       };
-      setChatReceiver(chatReceiver)
+      setChatReceiver(chatReceiver);
     }
-  }, [groupChatObject, oneOnOneChatObject])
-
+  }, [groupChatObject, oneOnOneChatObject]);
 
   const {
     data: messagesArr = [],
@@ -206,6 +211,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const [editMessageModal, setEditMessageModal] = useState<boolean>(false);
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
+  const [isDeletedChannel, setIsDeletedChannel] = useState<boolean>(false);
 
   useEffect(() => {
     const currentChannel = channelList.find(
@@ -751,22 +757,49 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     setEditMessageText('');
     setEditMessageModal(false);
   };
+
   const goBack = () => {
     if (defaultChannelId) {
-      navigation.navigate('RecentChat')
+      navigation.navigate('RecentChat');
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: 'RecentChat' }],
         })
       );
-      setChannelId('')
+      setChannelId('');
     } else {
-      navigation.goBack()
+      navigation.goBack();
+    }
+  };
+
+  useEffect(() => {
+    let unsubscribe: Amity.Unsubscriber | undefined;
+
+    // Check if channel exists and set up listener
+    if (connectionState === 'connected') {
+      unsubscribe = ChannelRepository.getChannel(
+        channelId,
+        ({ data: channel }) => {
+          if (channel && channel.isDeleted) {
+            setIsDeletedChannel(true);
+          }
+        }
+      );
     }
 
-    ;
-  }
+    // Effect for handling deleted channel
+    if (isDeletedChannel) {
+      navigation.navigate('RecentChat');
+      Alert.alert('Channel no longer exists');
+    }
+
+    // Cleanup function
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [channelId, connectionState, navigation, isDeletedChannel]);
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.topBarContainer} edges={['top']}>
