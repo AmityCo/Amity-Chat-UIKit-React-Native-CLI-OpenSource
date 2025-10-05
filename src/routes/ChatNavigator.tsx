@@ -1,5 +1,7 @@
-/* eslint-disable react/no-unstable-nested-components */
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigationIndependentTree,
+} from '@react-navigation/native';
 
 import RecentChat from '../screens/RecentChat/RecentChat';
 
@@ -19,61 +21,64 @@ export default function ChatNavigator() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
-    <NavigationContainer independent={true}>
-      <Stack.Navigator
-        screenOptions={{
-          headerShadowVisible: false,
-          contentStyle: {
-            backgroundColor: 'white',
-          },
-        }}
-      >
-        <Stack.Screen
-          name="RecentChat"
-          component={RecentChat}
-          options={({}) => ({
-            title: '',
-          })}
-        />
-        <Stack.Screen
-          name="ChatRoom"
-          options={{ headerShown: false }}
-          component={ChatRoom}
-        />
-        <Stack.Screen
-          name="ChatDetail"
-          component={ChatRoomSetting}
-          options={{
-            headerShown: false,
+    <NavigationIndependentTree>
+      <NavigationContainer>
+        <Stack.Navigator
+          id={undefined}
+          screenOptions={{
+            headerShadowVisible: false,
+            contentStyle: {
+              backgroundColor: 'white',
+            },
           }}
-        />
-        <Stack.Screen
-          name="MemberDetail"
-          component={MemberDetail}
-          options={{
-            title: 'Member Detail',
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="EditChatDetail"
-          component={EditChatRoomDetail}
-          options={{
-            title: 'Edit Chat Detail',
-            headerShown: false,
-          }}
-        />
-        <Stack.Group screenOptions={{ presentation: 'modal' }}>
+        >
           <Stack.Screen
-            name="SelectMembers"
-            component={SelectMembers}
+            name="RecentChat"
+            component={RecentChat}
             options={({}) => ({
               title: '',
-              headerShown: false,
             })}
           />
-        </Stack.Group>
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen
+            name="ChatRoom"
+            options={{ headerShown: false }}
+            component={ChatRoom}
+          />
+          <Stack.Screen
+            name="ChatDetail"
+            component={ChatRoomSetting}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="MemberDetail"
+            component={MemberDetail}
+            options={{
+              title: 'Member Detail',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="EditChatDetail"
+            component={EditChatRoomDetail}
+            options={{
+              title: 'Edit Chat Detail',
+              headerShown: false,
+            }}
+          />
+          <Stack.Group screenOptions={{ presentation: 'modal' }}>
+            <Stack.Screen
+              name="SelectMembers"
+              component={SelectMembers}
+              options={({}) => ({
+                title: '',
+                headerShown: false,
+              })}
+            />
+          </Stack.Group>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </NavigationIndependentTree>
   );
 }
