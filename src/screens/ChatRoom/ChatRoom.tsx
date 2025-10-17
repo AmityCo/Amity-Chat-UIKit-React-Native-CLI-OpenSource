@@ -641,7 +641,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       const status = await PermissionsAndroid.request(permission, {
         title: 'Camera permission required',
         message:
-          'Amity Chat needs access to your camera so you can take photos and share them in chat.',
+          'Chat needs access to your camera so you can take photos and share them in chat.',
         buttonPositive: 'Allow',
         buttonNegative: 'Cancel',
       });
