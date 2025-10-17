@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import React, {
@@ -19,6 +20,7 @@ import {
   FlatList,
   Keyboard,
   Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import ImageView from 'react-native-image-viewing';
 import CustomText from '../../components/CustomText';
@@ -627,17 +629,72 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     setIsExpanded(false);
   };
 
+  const ensureAndroidCameraPermission = async () => {
+    try {
+      const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
+      const hasPermission = await PermissionsAndroid.check(permission);
+
+      if (hasPermission) {
+        return true;
+      }
+
+      const status = await PermissionsAndroid.request(permission, {
+        title: 'Camera permission required',
+        message:
+          'Chat needs access to your camera so you can take photos and share them in chat.',
+        buttonPositive: 'Allow',
+        buttonNegative: 'Cancel',
+      });
+
+      if (status === PermissionsAndroid.RESULTS.GRANTED) {
+        return true;
+      }
+
+      Alert.alert(
+        'Camera permission needed',
+        'Enable camera access from Settings to take photos.'
+      );
+
+      return false;
+    } catch (error) {
+      Alert.alert('Unable to access camera', 'Please try again later.');
+      return false;
+    }
+  };
+
   const pickCamera = async () => {
+    if (Platform.OS === 'android') {
+      const hasPermission = await ensureAndroidCameraPermission();
+      if (!hasPermission) {
+        return;
+      }
+    }
+
     const result: ImagePicker.ImagePickerResponse = await launchCamera({
       mediaType: 'photo',
       quality: 1,
+      presentationStyle: 'fullScreen',
     });
-    if (
-      result.assets &&
-      result.assets.length > 0 &&
-      result.assets[0] !== null &&
-      result.assets[0]
-    ) {
+
+    if (result.errorCode) {
+      switch (result.errorCode) {
+        case 'camera_unavailable':
+          Alert.alert('Camera unavailable', 'Please try again later.');
+          break;
+        case 'permission':
+          Alert.alert(
+            'Camera permission needed',
+            'Enable camera access from Settings to take photos.'
+          );
+          break;
+        default:
+          Alert.alert('Unable to open camera', 'Please try again later.');
+          break;
+      }
+      return;
+    }
+
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
       setImageMultipleUri((prevUris) => [
         ...prevUris,
         result.assets[0].uri as string,
