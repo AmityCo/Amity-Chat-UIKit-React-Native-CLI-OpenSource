@@ -122,7 +122,7 @@ export default function SelectMembers() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton}>
-          <SvgXml xml={closeIcon} width="14" height="14" />
+          <SvgXml xml={closeIcon()} width="14" height="14" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Select Member</Text>

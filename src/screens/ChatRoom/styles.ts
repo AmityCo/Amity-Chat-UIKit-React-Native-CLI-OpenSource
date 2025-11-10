@@ -244,14 +244,14 @@ export const useStyles = () => {
       color: theme.colors.base,
     },
     optionsContainer: {
-      backgroundColor: 'white', // Change the background color
+      backgroundColor: '#FFFFFF', // Change the background color
       borderRadius: 10, // Add rounded corners
       padding: 10, // Add padding around the options container
       width: 80, // Set the width of the options container
       marginTop: -50, // Adjust the top margin as needed
     },
     optionText: {
-      color: theme.colors.base,
+      color: '#292B32',
     },
   });
 
