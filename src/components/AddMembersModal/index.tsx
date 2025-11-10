@@ -145,15 +145,17 @@ const AddMembersModal = ({
     return (
       <View style={styles.sectionItem}>
         {isrenderheader && <SectionHeader title={currentLetter} />}
-        <UserItem
-          isUserAccount={
-            (client as Amity.Client).userId === userObj.userId ? true : false
-          }
-          showThreeDot={false}
-          user={userObj}
-          isCheckmark={selectedUser}
-          onPress={onUserPressed}
-        />
+        {(client as Amity.Client).userId !== userObj.userId && (
+          <UserItem
+            isUserAccount={
+              (client as Amity.Client).userId === userObj.userId ? true : false
+            }
+            showThreeDot={false}
+            user={userObj}
+            isCheckmark={selectedUser}
+            onPress={onUserPressed}
+          />
+        )}
       </View>
     );
   };
@@ -224,9 +226,11 @@ const AddMembersModal = ({
             value={searchTerm}
             onChangeText={handleChange}
           />
-          <TouchableOpacity onPress={clearButton}>
-            <CircleCloseIcon color={theme.colors.base} />
-          </TouchableOpacity>
+          {searchTerm?.trim()?.length > 0 && (
+            <TouchableOpacity onPress={clearButton}>
+              <CircleCloseIcon color={theme.colors.base} />
+            </TouchableOpacity>
+          )}
         </View>
         {selectedUserList.length > 0 ? (
           <SelectedUserHorizontal
