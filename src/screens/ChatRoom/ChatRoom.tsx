@@ -131,6 +131,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     useState<Amity.Membership<'channel'>[]>();
   const [channelObject, setChannelObject] = useState<Amity.Channel>();
   const theme = useTheme() as MyMD3Theme;
+  const shouldCancelUploadsRef = useRef<boolean>(false);
 
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
@@ -242,6 +243,9 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     useCallback(() => {
       let disposers: Amity.Unsubscriber[] = [];
       startRead();
+
+      // Reset upload cancellation flag when entering the chat room
+      shouldCancelUploadsRef.current = false;
 
       if (connectionState === 'connected') {
         if (defaultChannelId && !channelIdParam) {
@@ -714,6 +718,11 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   };
 
   const handleOnFinishImage = async (fileId: string, originalPath: string) => {
+    // Don't process if uploads have been cancelled
+    if (shouldCancelUploadsRef.current) {
+      return;
+    }
+
     // Create message with the uploaded file
     await createImageMessage(fileId);
 
@@ -739,6 +748,9 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   // Process image queue - this useEffect will manage which image to upload next
   useEffect(() => {
     const processNextImage = () => {
+      // Don't process if uploads have been cancelled
+      if (shouldCancelUploadsRef.current) return;
+
       // If we're uploading or there are no images in queue, do nothing
       if (isUploading || imageMultipleUri.length === 0) return;
 
@@ -815,7 +827,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     setEditMessageModal(false);
   };
 
-  const goBack = () => {
+  const handleNavigation = () => {
     if (defaultChannelId) {
       navigation.navigate('RecentChat');
       navigation.dispatch(
@@ -827,6 +839,42 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       setChannelId('');
     } else {
       navigation.goBack();
+    }
+  };
+
+  const goBack = () => {
+    // Check if images are still uploading or if there are pending images in the queue
+    const hasPendingImages = displayImages.some((img) => !img.isUploaded);
+    const hasImagesInQueue = imageMultipleUri.length > 0;
+
+    if (isUploading || hasPendingImages || hasImagesInQueue) {
+      Alert.alert(
+        'Upload in Progress',
+        'Images are still uploading. Are you sure you want to leave? Your images will not be sent.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => {
+              // Set flag to cancel any ongoing or pending uploads
+              shouldCancelUploadsRef.current = true;
+
+              // Clear upload states
+              setIsUploading(false);
+              setDisplayImages([]);
+              setImageMultipleUri([]);
+
+              handleNavigation();
+            },
+          },
+        ]
+      );
+    } else {
+      handleNavigation();
     }
   };
 
