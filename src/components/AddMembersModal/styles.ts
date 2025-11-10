@@ -62,6 +62,7 @@ export const useStyles = () => {
       justifyContent: 'space-between',
       marginVertical: 10,
       alignItems: 'center',
+
     },
     input: {
       flex: 1,
@@ -69,6 +70,7 @@ export const useStyles = () => {
       height: 20,
       paddingVertical: 0,
       fontSize: 16,
+      color: theme.colors.base,
     },
     cancelBtn: {
       marginRight: 16,

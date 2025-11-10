@@ -158,9 +158,14 @@ export default function MemberDetail({ route, navigation }: any) {
           value={searchTerm}
           onChangeText={handleChange}
         />
-        <TouchableOpacity onPress={clearButton}>
-          <CircleCloseIcon color={theme.colors.base} />
-        </TouchableOpacity>
+        {
+          searchTerm.length > 0 && (
+            <TouchableOpacity onPress={clearButton}>
+              <CircleCloseIcon color={theme.colors.base} />
+            </TouchableOpacity>
+          )
+        }
+
       </View>
 
       <FlatList

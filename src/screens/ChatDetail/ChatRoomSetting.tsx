@@ -91,7 +91,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
               <EditIcon />
             </View>
             <Text style={styles.rowText}>Group profile</Text>
-            <ArrowRightIcon />
+            <ArrowRightIcon color={theme.colors.base}  />
           </TouchableOpacity>
         );
       case 2:

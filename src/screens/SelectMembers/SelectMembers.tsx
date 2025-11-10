@@ -9,12 +9,13 @@ import {
   FlatList,
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { styles } from './styles';
+
 import { circleCloseIcon, closeIcon, searchIcon } from '../../svg/svg-xml-list';
 import type { UserInterface } from '../../types/user.interface';
 
 import SelectedUserHorizontal from '../../components/SelectedUserHorizontal';
 import UserItem from '../../components/UserItem';
+import { useStyles } from './styles';
 
 export type SelectUserList = {
   title: string;
@@ -29,6 +30,7 @@ export default function SelectMembers() {
   const [usersObject, setUsersObject] =
     useState<Amity.LiveCollection<Amity.User>>();
   const [searchTerm, setSearchTerm] = useState('');
+    const styles = useStyles();
 
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
