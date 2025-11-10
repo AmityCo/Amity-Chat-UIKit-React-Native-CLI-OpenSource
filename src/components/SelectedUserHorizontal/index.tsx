@@ -22,9 +22,8 @@ const AvatarListItem = ({
   user: UserInterface;
   onDelete: () => void;
 }) => {
-
   const styles = useStyles();
-  const { apiRegion } = useAuth()
+  const { apiRegion } = useAuth();
   const avatarFileURL = (fileId: string) => {
     return `https://api.${apiRegion}.amity.co/api/v3/files/${fileId}/download?size=medium`;
   };
@@ -32,19 +31,22 @@ const AvatarListItem = ({
     <View style={styles.avatarContainer}>
       <View style={styles.avatar}>
         <View style={styles.avatarImageContainer}>
-          {user.avatarFileId ? <Image
-            style={styles.avatarImage}
-            source={
-              { uri: avatarFileURL(user.avatarFileId) }
-
-            } /> : <AvatarIcon />}
-
+          {user.avatarFileId ? (
+            <Image
+              style={styles.avatarImage}
+              source={{ uri: avatarFileURL(user.avatarFileId) }}
+            />
+          ) : (
+            <AvatarIcon />
+          )}
         </View>
         <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
           <Text style={styles.deleteButtonText}>✕</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.userName}>{displayName(user)}</Text>
+      <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
+        {displayName(user)}
+      </Text>
     </View>
   );
 };
@@ -78,6 +80,9 @@ export default function SelectedUserHorizontal({
       contentContainerStyle={styles.container}
       horizontal
       showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+      alwaysBounceVertical={false}
       onScroll={handleScroll}
       onMomentumScrollEnd={handleMomentumScrollEnd}
       ref={scrollViewRef}
