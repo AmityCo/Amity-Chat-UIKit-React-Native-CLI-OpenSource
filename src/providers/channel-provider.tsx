@@ -51,13 +51,17 @@ export async function leaveAmityChannel(
         resolve(true);
       }
     } catch (error) {
-      Alert.alert('Unable to leave channel due to ' + error, '', [
-        {
-          text: 'OK',
-          style: 'destructive',
-          onPress: () => {},
-        },
-      ]);
+      Alert.alert(
+        'Unable to leave channel',
+        `Can't remove role because the channel are the only 1 active moderator.`,
+        [
+          {
+            text: 'OK',
+            style: 'destructive',
+            onPress: () => {},
+          },
+        ]
+      );
 
       reject(new Error('Unable to leave channel ' + error));
     }
