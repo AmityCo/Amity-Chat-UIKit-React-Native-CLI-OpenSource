@@ -63,7 +63,13 @@ export const useStyles = () => {
       marginVertical: 10,
       alignItems: 'center',
     },
-    input: { flex: 1, marginHorizontal: 6 },
+    input: {
+      flex: 1,
+      marginHorizontal: 6,
+      height: 20,
+      paddingVertical: 0,
+      fontSize: 16,
+    },
     cancelBtn: {
       marginRight: 16,
     },
