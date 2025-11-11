@@ -56,8 +56,7 @@ export const useStyles = () => {
       width: '100%',
     },
     selectedUser: {
-      // height: 150
-      paddingBottom: 30,
+      height: 130,
     },
   });
   return styles;
