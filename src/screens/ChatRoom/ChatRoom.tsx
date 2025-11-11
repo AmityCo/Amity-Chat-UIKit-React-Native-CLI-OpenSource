@@ -132,6 +132,8 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const [channelObject, setChannelObject] = useState<Amity.Channel>();
   const theme = useTheme() as MyMD3Theme;
   const shouldCancelUploadsRef = useRef<boolean>(false);
+  const imageQueueRef = useRef<string[]>([]);
+  const displayImagesRef = useRef<IDisplayImage[]>([]);
 
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
@@ -699,10 +701,12 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     }
 
     if (!result.didCancel && result.assets && result.assets.length > 0) {
-      setImageMultipleUri((prevUris) => [
-        ...prevUris,
-        result.assets[0].uri as string,
-      ]);
+      const newUri = result.assets[0].uri as string;
+      setImageMultipleUri((prevUris) => {
+        const updated = [...prevUris, newUri];
+        imageQueueRef.current = updated;
+        return updated;
+      });
     }
   };
 
@@ -727,22 +731,23 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     await createImageMessage(fileId);
 
     // Remove the processed image from both arrays
-    setTimeout(() => {
-      setDisplayImages((prevData) => {
-        const newData: IDisplayImage[] = prevData.filter(
-          (item: IDisplayImage) => item.url !== originalPath
-        );
-        return newData;
-      });
+    // Update refs immediately to ensure goBack always has current state
+    setDisplayImages((prevData) => {
+      const newData: IDisplayImage[] = prevData.filter(
+        (item: IDisplayImage) => item.url !== originalPath
+      );
+      displayImagesRef.current = newData;
+      return newData;
+    });
 
-      setImageMultipleUri((prevData) => {
-        const newData = prevData.filter((url: string) => url !== originalPath);
-        return newData;
-      });
+    setImageMultipleUri((prevData) => {
+      const newData = prevData.filter((url: string) => url !== originalPath);
+      imageQueueRef.current = newData;
+      return newData;
+    });
 
-      // Set uploading state to false to allow processing next image
-      setIsUploading(false);
-    }, 0);
+    // Set uploading state to false to allow processing next image
+    setIsUploading(false);
   };
 
   // Process image queue - this useEffect will manage which image to upload next
@@ -770,6 +775,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
 
       // Set the image for upload and mark as uploading
       setDisplayImages([nextImageObject]);
+      displayImagesRef.current = [nextImageObject];
       setIsUploading(true);
     };
 
@@ -789,7 +795,11 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       ) as string[];
 
       // Add all selected images to the queue
-      setImageMultipleUri((prevUris) => [...prevUris, ...imageUriArr]);
+      setImageMultipleUri((prevUris) => {
+        const updated = [...prevUris, ...imageUriArr];
+        imageQueueRef.current = updated;
+        return updated;
+      });
     }
   };
 
@@ -844,10 +854,11 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
 
   const goBack = () => {
     // Check if images are still uploading or if there are pending images in the queue
-    const hasPendingImages = displayImages.some((img) => !img.isUploaded);
-    const hasImagesInQueue = imageMultipleUri.length > 0;
 
-    if (isUploading || hasPendingImages || hasImagesInQueue) {
+    const hasPendingImages = displayImagesRef.current.length > 0;
+    const hasImagesInQueue = imageQueueRef.current.length > 0;
+
+    if (hasPendingImages || hasImagesInQueue) {
       Alert.alert(
         'Upload in Progress',
         'Images are still uploading. Are you sure you want to leave? Your images will not be sent.',
@@ -867,6 +878,8 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               setIsUploading(false);
               setDisplayImages([]);
               setImageMultipleUri([]);
+              displayImagesRef.current = [];
+              imageQueueRef.current = [];
 
               handleNavigation();
             },
