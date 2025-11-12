@@ -20,7 +20,6 @@ export default function BackButton({ onPress }: IBackBtn) {
         } else {
           navigation.goBack();
         }
-
       }}
     >
       <BackIcon color={theme.colors.base} />
