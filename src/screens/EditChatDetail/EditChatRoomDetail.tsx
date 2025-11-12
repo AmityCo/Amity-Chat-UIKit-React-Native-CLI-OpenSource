@@ -9,6 +9,7 @@ import {
   ActionSheetIOS,
   Platform,
   TextInput,
+  Alert,
 } from 'react-native';
 import ImagePicker, {
   launchImageLibrary,
@@ -22,7 +23,11 @@ import { LoadingOverlay } from '../../components/LoadingOverlay';
 
 import LoadingImage from '../../components/LoadingImage';
 import type { RootStackParamList } from '../../routes/RouteParamList';
-import { type RouteProp, useRoute } from '@react-navigation/native';
+import {
+  type RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import useAuth from '../../hooks/useAuth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraIcon } from '../../svg/CameraIcon';
@@ -33,46 +38,47 @@ import BackButton from '../../components/BackButton';
 import recentChatSlice from '../../redux/slices/RecentChatSlice';
 import { RootState } from '../../redux/store';
 import { useDispatch, useSelector } from 'react-redux';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 interface EditChatDetailProps {
-  navigation: any;
   route: any;
 }
 
-export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
-  navigation,
-}) => {
+export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
   const styles = useStyles();
   const { apiRegion } = useAuth();
   const route = useRoute<RouteProp<RootStackParamList, 'EditChatRoomDetail'>>();
   const MAX_CHARACTER_COUNT = 100;
   const { channelId, groupChat } = route.params;
 
+  const theme = useTheme() as MyMD3Theme;
+  const { channelList } = useSelector((state: RootState) => state.recentChat);
+  const { updateByChannelId } = recentChatSlice.actions;
+  const dispatch = useDispatch();
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  // Get the current channel from Redux store to ensure we have the latest data
+  const currentChannelFromStore = channelList.find(
+    (item) => item.chatId === channelId
+  );
+
+  // Use the chatName from Redux store if available, otherwise fall back to route params
+  const initialDisplayName =
+    currentChannelFromStore?.chatName || groupChat?.displayName;
+
   const [displayName, setDisplayName] = useState<string | undefined>(
-    groupChat?.displayName
+    initialDisplayName
   );
   const [characterCount, setCharacterCount] = useState(
-    groupChat?.displayName?.length ?? 0
+    initialDisplayName?.length ?? 0
   );
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
   const [uploadedFileId, setUploadedFileId] = useState<string>();
 
-  const theme = useTheme() as MyMD3Theme;
-  const { channelList } = useSelector((state: RootState) => state.recentChat);
-  const { updateByChannelId } = recentChatSlice.actions;
-  const dispatch = useDispatch();
-
   const onDonePressed = async () => {
     const currentChannel = channelList.find(
       (item) => item.chatId === channelId
-    );
-    currentChannel.avatarFileId = uploadedFileId;
-    dispatch(
-      updateByChannelId({
-        channelId: channelId,
-        updatedChannelData: currentChannel,
-      })
     );
 
     try {
@@ -82,7 +88,19 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         uploadedFileId as string,
         displayName
       );
+
       if (result) {
+        const updatedChannel = {
+          ...currentChannel,
+          avatarFileId: uploadedFileId,
+          chatName: displayName || currentChannel.chatName,
+        };
+        dispatch(
+          updateByChannelId({
+            channelId: channelId,
+            updatedChannelData: updatedChannel,
+          })
+        );
         setShowLoadingIndicator(false);
         navigation.goBack();
       }
@@ -152,15 +170,45 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
   const handleOnFinishImage = async (fileId: string) => {
     setUploadedFileId(fileId);
   };
+
+  const hasDisplayNameChanged = displayName !== initialDisplayName;
+  const hasImageChanged = imageMultipleUri.length > 0;
+  const hasChanges = hasDisplayNameChanged || hasImageChanged;
+
+  const handleBackPress = () => {
+    if (hasChanges) {
+      Alert.alert(
+        'Leave without finishing?',
+        'Your changes that you made may not be saved.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } else {
+      navigation.goBack();
+    }
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.topBarContainer} edges={['top']}>
         <View style={styles.topBar}>
-          <BackButton />
+          <BackButton onPress={handleBackPress} />
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerText}>Edit Chat Detail</Text>
           </View>
-          <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
+          <DoneButton
+            onDonePressed={onDonePressed}
+            disabled={!hasChanges}
+            text="Save"
+          />
         </View>
       </SafeAreaView>
 
