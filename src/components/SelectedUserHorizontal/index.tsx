@@ -86,7 +86,6 @@ export default function SelectedUserHorizontal({
       onScroll={handleScroll}
       onMomentumScrollEnd={handleMomentumScrollEnd}
       ref={scrollViewRef}
-      style={styles.selectedUser}
     >
       {users.map((user) => (
         <AvatarListItem

@@ -7,7 +7,7 @@ export const useStyles = () => {
   const styles = StyleSheet.create({
     container: {
       paddingLeft: 10,
-      paddingTop: 12,
+      paddingVertical: 12,
       flexDirection: 'row',
       backgroundColor: theme.colors.background,
     },
@@ -54,9 +54,6 @@ export const useStyles = () => {
       color: theme.colors.base,
 
       width: '100%',
-    },
-    selectedUser: {
-      height: 130,
     },
   });
   return styles;
