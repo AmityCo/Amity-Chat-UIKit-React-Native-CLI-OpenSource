@@ -235,14 +235,6 @@ const AddMembersModal = ({
             </TouchableOpacity>
           )}
         </View>
-        {selectedUserList.length > 0 ? (
-          <SelectedUserHorizontal
-            users={selectedUserList}
-            onDeleteUserPressed={onDeleteUserPressed}
-          />
-        ) : (
-          <View />
-        )}
         <FlatList
           data={sectionedUserList}
           renderItem={renderItem}
@@ -250,9 +242,19 @@ const AddMembersModal = ({
           onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.userId}
           ListHeaderComponent={
-            isShowSectionHeader ? renderSectionHeader : <View />
+            <>
+              {selectedUserList.length > 0 && (
+                <SelectedUserHorizontal
+                  users={selectedUserList}
+                  onDeleteUserPressed={onDeleteUserPressed}
+                />
+              )}
+              {isShowSectionHeader ? renderSectionHeader() : null}
+            </>
           }
-          stickyHeaderIndices={[0]}
+          stickyHeaderIndices={
+            isShowSectionHeader ? [selectedUserList.length > 0 ? 1 : 0] : []
+          }
           ref={flatListRef}
           onScroll={handleScroll}
         />
