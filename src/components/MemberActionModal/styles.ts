@@ -50,6 +50,11 @@ export const useStyles = () => {
       color: theme.colors.base,
       fontSize: 14,
     },
+    actionRowContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
   });
 
   return styles;

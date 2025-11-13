@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   Modal,
@@ -6,6 +7,7 @@ import {
   Text,
   type TextStyle,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import React, {
   type FC,
@@ -16,8 +18,9 @@ import React, {
   useRef,
 } from 'react';
 import { useStyles } from './styles';
-import { ChannelRepository, createReport } from '@amityco/ts-sdk-react-native';
+import { ChannelRepository } from '@amityco/ts-sdk-react-native';
 import useAuth from './../../hooks/useAuth';
+import useUserFlaggedByMe from '../../hooks/useUserFlaggedByMe';
 
 interface IMemberActionModal {
   isVisible: boolean;
@@ -27,7 +30,7 @@ interface IMemberActionModal {
   hasModeratorPermission?: boolean;
   isInModeratorTab?: boolean;
   isChannelModerator?: boolean;
-  onFinish?:()=> void;
+  onFinish?: () => void;
 }
 
 const MemberActionModal: FC<IMemberActionModal> = ({
@@ -38,31 +41,39 @@ const MemberActionModal: FC<IMemberActionModal> = ({
   hasModeratorPermission,
   isInModeratorTab,
   isChannelModerator,
-  onFinish
+  onFinish,
 }) => {
   const styles = useStyles();
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const { client } = useAuth() as { client: { userId: string } };
   const currentUserId = client.userId ?? '';
 
-  async function addRole() {
-    const didAdd = await ChannelRepository.Moderation.addRole(channelId, 'channel-moderator', [
-      userId
-    ]);
-    if (didAdd) {
-      Alert.alert('Promote to moderator ✅')
-    }
-  }
+  const { isFlaggedByMe, toggleFlagUser, isLoading } =
+    useUserFlaggedByMe(userId);
 
-  async function removeRole() {
-    const didRemove = await ChannelRepository.Moderation.removeRole(channelId, 'channel-moderator', [
-      userId
-    ]);
+  const addRole = useCallback(async () => {
+    const didAdd = await ChannelRepository.Moderation.addRole(
+      channelId,
+      'channel-moderator',
+      [userId]
+    );
+    if (didAdd) {
+      Alert.alert('Promote to moderator ✅');
+    }
+  }, [channelId, userId]);
+
+  const removeRole = useCallback(async () => {
+    const didRemove = await ChannelRepository.Moderation.removeRole(
+      channelId,
+      'channel-moderator',
+      [userId]
+    );
 
     if (didRemove) {
-      Alert.alert('Remove user from moderator')
+      Alert.alert('Remove user from moderator');
     }
-  }
+  }, [channelId, userId]);
+
   const actionData = useMemo(
     () => [
       {
@@ -73,10 +84,9 @@ const MemberActionModal: FC<IMemberActionModal> = ({
           currentUserId !== userId &&
           isInModeratorTab,
         callBack: async () => {
-          removeRole()
-          onFinish && onFinish()
-        }
-
+          removeRole();
+          onFinish && onFinish();
+        },
       },
       {
         id: 'promote',
@@ -84,32 +94,35 @@ const MemberActionModal: FC<IMemberActionModal> = ({
         shouldShow:
           hasModeratorPermission &&
           currentUserId !== userId &&
-          !isInModeratorTab && !isChannelModerator,
+          !isInModeratorTab &&
+          !isChannelModerator,
         callBack: async () => {
           addRole();
           onFinish && onFinish();
-
-        }
+        },
       },
       {
-        id: 'report',
-        label: 'Report User',
+        id: isFlaggedByMe ? 'unreport' : 'report',
+        label: isFlaggedByMe ? 'Unreport User' : 'Report User',
         shouldShow: currentUserId !== userId,
         callBack: async () => {
-          const isReport = await createReport('user', userId)
-          if (isReport) {
-            Alert.alert('Report sent ✅')
-            onFinish && onFinish();
-          }
-        }
+          const wasFlagged = isFlaggedByMe;
+          await toggleFlagUser();
+          Alert.alert(wasFlagged ? 'Unreport sent ✅' : 'Report sent ✅');
+          onFinish && onFinish();
+        },
       },
-
     ],
     [
-      channelId,
+      addRole,
       currentUserId,
       hasModeratorPermission,
+      isChannelModerator,
+      isFlaggedByMe,
       isInModeratorTab,
+      onFinish,
+      removeRole,
+      toggleFlagUser,
       userId,
     ]
   );
@@ -124,9 +137,10 @@ const MemberActionModal: FC<IMemberActionModal> = ({
 
   const onPressAction = useCallback(
     async ({ callBack }) => {
+      closeModal();
       try {
         await callBack();
-      } catch (error) { }
+      } catch (error) {}
       closeModal();
     },
     [closeModal]
@@ -166,15 +180,23 @@ const MemberActionModal: FC<IMemberActionModal> = ({
             const warningStyle: TextStyle | null =
               data.id === 'remove' ? { color: 'red' } : null;
             if (data.shouldShow) {
+              const isReportAction =
+                data.id === 'report' || data.id === 'unreport';
               return (
                 <TouchableOpacity
                   key={data.id}
                   onPress={() => onPressAction(data)}
                   style={styles.modalRow}
                 >
-                  <Text style={[styles.actionText, warningStyle]}>
-                    {data.label}
-                  </Text>
+                  <View style={styles.actionRowContent}>
+                    {isReportAction && isLoading ? (
+                      <ActivityIndicator size="small" />
+                    ) : (
+                      <Text style={[styles.actionText, warningStyle]}>
+                        {data.label}
+                      </Text>
+                    )}
+                  </View>
                 </TouchableOpacity>
               );
             } else return null;
