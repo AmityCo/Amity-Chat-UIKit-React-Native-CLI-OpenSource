@@ -8,16 +8,19 @@ export const useStyles = () => {
     icon: {
       backgroundColor: theme.colors.background,
       color: '#000',
-      height: 20,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
     },
     doneText: {
+      display: 'flex',
       fontSize: 18,
       color: theme.colors.primary,
     },
     disabledText: {
+      display: 'flex',
+      fontSize: 18,
+      color: theme.colors.primary,
       opacity: 0.3,
     },
   });
