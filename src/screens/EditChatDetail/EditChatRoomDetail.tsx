@@ -75,6 +75,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
   const [uploadedFileId, setUploadedFileId] = useState<string>();
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const onDonePressed = async () => {
     const currentChannel = channelList.find(
@@ -130,7 +131,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
     const result: ImagePicker.ImagePickerResponse = await launchImageLibrary({
       mediaType: 'photo',
       quality: 1,
-      selectionLimit: 10,
+      selectionLimit: 1,
     });
     if (!result.didCancel && result.assets && result.assets.length > 0) {
       const selectedImages: Asset[] = result.assets;
@@ -171,9 +172,27 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
     setUploadedFileId(fileId);
   };
 
+  const handleOnErrorImage = (error: any, imagePath: string) => {
+    setImageMultipleUri((prev) => prev.filter((uri) => uri !== imagePath));
+    const title = error?.title || 'Upload Failed';
+    const message =
+      error?.message || 'Failed to upload image. Please try again.';
+
+    Alert.alert(title, message, [
+      {
+        text: 'OK',
+      },
+    ]);
+  };
+
+  const handleLoadingChange = (isLoading: boolean) => {
+    setIsImageUploading(isLoading);
+  };
+
   const hasDisplayNameChanged = displayName !== initialDisplayName;
   const hasImageChanged = imageMultipleUri.length > 0;
   const hasChanges = hasDisplayNameChanged || hasImageChanged;
+  const isSaveDisabled = !hasChanges || isImageUploading;
 
   const handleBackPress = () => {
     if (hasChanges) {
@@ -206,7 +225,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
           </View>
           <DoneButton
             onDonePressed={onDonePressed}
-            disabled={!hasChanges}
+            disabled={isSaveDisabled}
             text="Save"
           />
         </View>
@@ -226,6 +245,8 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({}) => {
                   isShowSending={false}
                   source={imageMultipleUri[0] as string}
                   onLoadFinish={handleOnFinishImage}
+                  onError={handleOnErrorImage}
+                  onLoadingChange={handleLoadingChange}
                 />
               </View>
             ) : groupChat?.avatarFileId ? (
