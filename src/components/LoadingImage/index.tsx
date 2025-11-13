@@ -15,6 +15,8 @@ interface OverlayImageProps {
   source: string;
   onClose?: (originalPath: string) => void;
   onLoadFinish?: (fileId: string, originalPath: string) => void;
+  onError?: (error: any, originalPath: string) => void;
+  onLoadingChange?: (isLoading: boolean) => void;
   index?: number;
   isUploaded?: boolean;
   fileId?: string;
@@ -25,6 +27,8 @@ interface OverlayImageProps {
 const LoadingImage = ({
   source,
   onLoadFinish,
+  onError,
+  onLoadingChange,
   isShowSending = true,
   containerStyle,
 }: OverlayImageProps) => {
@@ -33,6 +37,10 @@ const LoadingImage = ({
   const [isProcess, setIsProcess] = useState<boolean>(false);
   const [isFinish, setIsFinish] = useState(false);
   const styles = createStyles();
+
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
 
   const handleLoadEnd = () => {
     setLoading(false);
@@ -46,21 +54,30 @@ const LoadingImage = ({
 
   const uploadFileToAmity = useCallback(async () => {
     if (!isFinish) {
-      const file: Amity.File<any>[] = await uploadImageFile(
-        source,
-        (percent: number) => {
-          setProgress(percent);
-        },
-        true
-      );
-      if (file) {
+      try {
+        const file: Amity.File<any>[] = await uploadImageFile(
+          source,
+          (percent: number) => {
+            setProgress(percent);
+          },
+          true
+        );
+
+        if (file) {
+          setIsFinish(true);
+          setIsProcess(false);
+          handleLoadEnd();
+          onLoadFinish && onLoadFinish(file[0]?.fileId as string, source);
+        }
+      } catch (error) {
         setIsFinish(true);
         setIsProcess(false);
         handleLoadEnd();
-        onLoadFinish && onLoadFinish(file[0]?.fileId as string, source);
+        onError && onError(error, source);
       }
     }
-  }, [isFinish, source]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
 
   useEffect(() => {
     if (isFinish) {

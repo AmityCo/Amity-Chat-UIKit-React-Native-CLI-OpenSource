@@ -46,6 +46,10 @@ export const Permissions = Object.freeze({
 });
 export const text_contain_blocked_word = 'Text contain blocked word';
 
+export const ERROR_RESPONSE = Object.freeze({
+  IMAGE_NUDITY: 'Nudity content is not permitted',
+});
+
 export const ALLOWED_MEDIA_TYPE = {
   image: ['jpg', 'jpeg', 'png'],
   video: ['mp4', 'mov'],
