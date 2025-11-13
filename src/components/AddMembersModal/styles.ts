@@ -62,7 +62,6 @@ export const useStyles = () => {
       justifyContent: 'space-between',
       marginVertical: 10,
       alignItems: 'center',
-
     },
     input: {
       flex: 1,
@@ -83,6 +82,7 @@ export const useStyles = () => {
       color: theme.colors.primary,
     },
     disabledDone: {
+      color: theme.colors.primary,
       opacity: 0.5,
     },
     sectionItem: {
