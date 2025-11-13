@@ -51,6 +51,7 @@ const AddMembersModal = ({
   const [isShowSectionHeader, setIsShowSectionHeader] =
     useState<boolean>(false);
   const { client } = useAuth();
+
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
   const queryAccounts = (text: string = '') => {
@@ -74,7 +75,7 @@ const AddMembersModal = ({
     setSearchTerm('');
   };
 
-  const createSectionGroup = () => {
+  const createSectionGroup = React.useCallback(() => {
     const sectionUserArr = userArr.map((item) => {
       return {
         userId: item.userId,
@@ -83,11 +84,11 @@ const AddMembersModal = ({
       };
     });
     setSectionedUserList(sectionUserArr);
-  };
+  }, [userArr]);
 
   useEffect(() => {
     createSectionGroup();
-  }, [userArr]);
+  }, [createSectionGroup, userArr]);
 
   useEffect(() => {
     if (searchTerm.length === 0) {
@@ -173,6 +174,7 @@ const AddMembersModal = ({
   };
   const handleOnClose = () => {
     setSelectedUserList(initUserList);
+    setSearchTerm('');
     onClose && onClose();
   };
   const handleLoadMore = () => {
@@ -189,6 +191,7 @@ const AddMembersModal = ({
   const onDone = () => {
     onFinish && onFinish(selectedUserList);
     setSelectedUserList([]);
+    setSearchTerm('');
     onClose && onClose();
   };
 
