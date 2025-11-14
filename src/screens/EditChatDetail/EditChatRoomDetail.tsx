@@ -39,37 +39,43 @@ interface EditChatDetailProps {
   route: any;
 }
 
-
-
 export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
   navigation,
 }) => {
-
   const styles = useStyles();
-  const { apiRegion } = useAuth()
-  const route = useRoute<RouteProp<RootStackParamList, 'EditChatDetail'>>();
+  const { apiRegion } = useAuth();
+  const route = useRoute<RouteProp<RootStackParamList, 'EditChatRoomDetail'>>();
   const MAX_CHARACTER_COUNT = 100;
   const { channelId, groupChat } = route.params;
 
-  const [displayName, setDisplayName] = useState<string | undefined>(groupChat?.displayName);
-  const [characterCount, setCharacterCount] = useState(groupChat?.displayName?.length ?? 0);
+  const [displayName, setDisplayName] = useState<string | undefined>(
+    groupChat?.displayName
+  );
+  const [characterCount, setCharacterCount] = useState(
+    groupChat?.displayName?.length ?? 0
+  );
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
-  const [uploadedFileId, setUploadedFileId] = useState<string>()
+  const [uploadedFileId, setUploadedFileId] = useState<string>();
 
   const theme = useTheme() as MyMD3Theme;
   const { channelList } = useSelector((state: RootState) => state.recentChat);
-  const { updateByChannelId } = recentChatSlice.actions
+  const { updateByChannelId } = recentChatSlice.actions;
   const dispatch = useDispatch();
-  
+
   const onDonePressed = async () => {
+    const currentChannel = channelList.find(
+      (item) => item.chatId === channelId
+    );
+    currentChannel.avatarFileId = uploadedFileId;
+    dispatch(
+      updateByChannelId({
+        channelId: channelId,
+        updatedChannelData: currentChannel,
+      })
+    );
 
-    const currentChannel = channelList.find(item => item.chatId === channelId)
-    currentChannel.avatarFileId = uploadedFileId
-    dispatch(updateByChannelId({channelId: channelId, updatedChannelData: currentChannel}))
-    
     try {
-
       setShowLoadingIndicator(true);
       const result = await updateAmityChannel(
         channelId,
@@ -77,7 +83,6 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         displayName
       );
       if (result) {
-
         setShowLoadingIndicator(false);
         navigation.goBack();
       }
@@ -136,8 +141,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         }
       );
     } else {
-      pickImage()
-
+      pickImage();
     }
   };
 
@@ -145,15 +149,11 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
     setDisplayName(text);
     setCharacterCount(text.length);
   };
-  const handleOnFinishImage = async (
-    fileId: string,
-  ) => {
-    setUploadedFileId(fileId)
-
-
-  }
+  const handleOnFinishImage = async (fileId: string) => {
+    setUploadedFileId(fileId);
+  };
   return (
-    <View style={{flex:1}}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.topBarContainer} edges={['top']}>
         <View style={styles.topBar}>
           <BackButton />
@@ -165,15 +165,13 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
       </SafeAreaView>
 
       <View style={styles.container}>
-
         <LoadingOverlay
           isLoading={showLoadingIndicator}
           loadingText="Loading..."
         />
         <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={handleAvatarPress}>
-            {imageMultipleUri.length > 0 ?
-
+            {imageMultipleUri.length > 0 ? (
               <View>
                 <LoadingImage
                   containerStyle={styles.uploadedImage}
@@ -182,19 +180,24 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
                   onLoadFinish={handleOnFinishImage}
                 />
               </View>
-
-
-              : (groupChat?.avatarFileId ? <Image
+            ) : groupChat?.avatarFileId ? (
+              <Image
                 style={styles.avatar}
-                source={
-                  { uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download` }
-
-                }
-              /> : <AvatarIcon />)}
-
-
+                source={{
+                  uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download`,
+                }}
+              />
+            ) : (
+              <AvatarIcon />
+            )}
           </TouchableOpacity>
-          <View style={imageMultipleUri[0] ? styles.uploadedCameraIconContainer : styles.cameraIconContainer}>
+          <View
+            style={
+              imageMultipleUri[0]
+                ? styles.uploadedCameraIconContainer
+                : styles.cameraIconContainer
+            }
+          >
             <TouchableOpacity onPress={handleAvatarPress}>
               <View style={styles.cameraIcon}>
                 <CameraIcon color={theme.colors.base} width={16} height={16} />
@@ -219,9 +222,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
           placeholder="Enter your display name"
           placeholderTextColor="#a0a0a0"
         />
-
       </View>
     </View>
-
   );
 };

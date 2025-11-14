@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import {
   NavigationContainer,
   NavigationIndependentTree,
@@ -17,7 +18,11 @@ import { EditChatRoomDetail } from '../screens/EditChatDetail/EditChatRoomDetail
 import MemberDetail from '../screens/MemberDetail/MemberDetail';
 import ChatRoom from '../screens/ChatRoom/ChatRoom';
 
-export default function ChatNavigator() {
+interface PageRendererProps {
+  children: React.JSX.Element;
+}
+
+export default function PageRenderer({ children }: PageRendererProps) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
@@ -31,19 +36,15 @@ export default function ChatNavigator() {
               backgroundColor: 'white',
             },
           }}
+          initialRouteName={
+            children.type?.displayName ||
+            (children.type?.name as keyof RootStackParamList)
+          }
         >
-          <Stack.Screen
-            name="RecentChat"
-            component={RecentChat}
-            options={({}) => ({
-              title: '',
-            })}
-          />
-          <Stack.Screen
-            name="ChatRoom"
-            options={{ headerShown: false }}
-            component={ChatRoom}
-          />
+          <Stack.Screen name="RecentChat" component={RecentChat} />
+          <Stack.Screen name="ChatRoom" options={{ headerShown: false }}>
+            {() => <ChatRoom {...children.props} />}
+          </Stack.Screen>
           <Stack.Screen
             name="ChatDetail"
             component={ChatRoomSetting}

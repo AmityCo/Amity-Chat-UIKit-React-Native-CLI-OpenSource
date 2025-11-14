@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import React, {
@@ -19,21 +20,24 @@ import {
   FlatList,
   Keyboard,
   Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import ImageView from 'react-native-image-viewing';
 import CustomText from '../../components/CustomText';
 import { useStyles } from './styles';
 import {
+  CommonActions,
   type RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import type { RootStackParamList } from '../../routes/RouteParamList';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
 import moment from 'moment';
 import {
+  ChannelRepository,
   MessageContentType,
   MessageRepository,
   SubChannelRepository,
@@ -69,11 +73,8 @@ import { getAmityUser } from '../../providers/user-provider';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { IGroupChatObject } from '~/components/ChatList';
+import { UserInterface } from '~/types/user.interface';
 
-type ChatRoomScreenComponentType = React.FC<{
-  route: RouteProp<RootStackParamList, 'ChatRoom'>;
-  navigation: StackNavigationProp<RootStackParamList, 'ChatRoom'>;
-}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
@@ -99,25 +100,99 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
-const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
+const ChatRoom = ({ defaultChannelId = '' }) => {
+  const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
   const { channelList } = useSelector((state: RootState) => state.recentChat);
   const { connectionState } = useSelector(
     (state: RootState) => state.connectionState
   );
-
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  let { chatReceiver, groupChat, channelId } = route.params;
-
+  let {
+    chatReceiver: chatReceiverParam,
+    groupChat: groupChatParam,
+    channelId: channelIdParam,
+  } = route.params ?? {};
   const { client, apiRegion } = useAuth();
+  const [chatReceiver, setChatReceiver] = useState(chatReceiverParam);
+  const [groupChat, setGroupChat] = useState(groupChatParam);
+  const [channelId, setChannelId] = useState<string>(channelIdParam);
+
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
     useState<Amity.LiveCollection<Amity.Message>>();
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
   const [displayImages, setDisplayImages] = useState<IDisplayImage[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [oneOnOneChatObject, setOneOnOneChatObject] =
+    useState<Amity.Membership<'channel'>[]>();
+  const [groupChatObject, setGroupChatObject] =
+    useState<Amity.Membership<'channel'>[]>();
+  const [channelObject, setChannelObject] = useState<Amity.Channel>();
   const theme = useTheme() as MyMD3Theme;
+
+  const queryChannelObject = () => {
+    ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
+      if (channel) {
+        setChannelObject(channel);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (channelObject && !oneOnOneChatObject && !groupChatObject) {
+      ChannelRepository.Membership.getMembers(
+        { channelId: channelObject.channelId },
+        ({ data: members }) => {
+          if (
+            channelObject.memberCount === 2 &&
+            channelObject.type === 'conversation'
+          ) {
+            setOneOnOneChatObject((prev) => prev !== members && members);
+          } else if (members) {
+            setGroupChatObject((prev) => prev !== members && members);
+          }
+        }
+      );
+    }
+  }, [channelObject]);
+
+  useEffect(() => {
+    if (groupChatObject) {
+      const userArr: UserInterface[] = groupChatObject?.map((item) => {
+        return {
+          userId: item.userId as string,
+          displayName: item.user?.displayName as string,
+          avatarFileId: item.user?.avatarFileId as string,
+        };
+      });
+      const groupChat: IGroupChatObject = {
+        users: userArr,
+        displayName: channelObject.displayName as string,
+        avatarFileId: channelObject.avatarFileId,
+        memberCount: channelObject.memberCount,
+      };
+      setGroupChat(groupChat);
+      setGroupChatInfo({
+        displayName: channelObject?.displayName,
+        avatarFileId: channelObject?.avatarFileId,
+        memberCount: channelObject?.memberCount,
+      });
+    }
+    if (oneOnOneChatObject) {
+      const targetIndex: number = oneOnOneChatObject?.findIndex(
+        (item) => item.userId !== (client as Amity.Client).userId
+      );
+      const chatReceiver: UserInterface = {
+        userId: oneOnOneChatObject[targetIndex]?.userId as string,
+        displayName: oneOnOneChatObject[targetIndex]?.user
+          ?.displayName as string,
+        avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
+      };
+      setChatReceiver(chatReceiver);
+    }
+  }, [groupChatObject, oneOnOneChatObject]);
 
   const {
     data: messagesArr = [],
@@ -138,6 +213,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const [editMessageModal, setEditMessageModal] = useState<boolean>(false);
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
+  const [isDeletedChannel, setIsDeletedChannel] = useState<boolean>(false);
 
   useEffect(() => {
     const currentChannel = channelList.find(
@@ -168,6 +244,10 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
       startRead();
 
       if (connectionState === 'connected') {
+        if (defaultChannelId && !channelIdParam) {
+          queryChannelObject();
+          setChannelId(defaultChannelId);
+        }
         disposers.push(
           MessageRepository.getMessages(
             { subChannelId: channelId, limit: 10, includeDeleted: true },
@@ -549,17 +629,72 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
     setIsExpanded(false);
   };
 
+  const ensureAndroidCameraPermission = async () => {
+    try {
+      const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
+      const hasPermission = await PermissionsAndroid.check(permission);
+
+      if (hasPermission) {
+        return true;
+      }
+
+      const status = await PermissionsAndroid.request(permission, {
+        title: 'Camera permission required',
+        message:
+          'Chat needs access to your camera so you can take photos and share them in chat.',
+        buttonPositive: 'Allow',
+        buttonNegative: 'Cancel',
+      });
+
+      if (status === PermissionsAndroid.RESULTS.GRANTED) {
+        return true;
+      }
+
+      Alert.alert(
+        'Camera permission needed',
+        'Enable camera access from Settings to take photos.'
+      );
+
+      return false;
+    } catch (error) {
+      Alert.alert('Unable to access camera', 'Please try again later.');
+      return false;
+    }
+  };
+
   const pickCamera = async () => {
+    if (Platform.OS === 'android') {
+      const hasPermission = await ensureAndroidCameraPermission();
+      if (!hasPermission) {
+        return;
+      }
+    }
+
     const result: ImagePicker.ImagePickerResponse = await launchCamera({
       mediaType: 'photo',
       quality: 1,
+      presentationStyle: 'fullScreen',
     });
-    if (
-      result.assets &&
-      result.assets.length > 0 &&
-      result.assets[0] !== null &&
-      result.assets[0]
-    ) {
+
+    if (result.errorCode) {
+      switch (result.errorCode) {
+        case 'camera_unavailable':
+          Alert.alert('Camera unavailable', 'Please try again later.');
+          break;
+        case 'permission':
+          Alert.alert(
+            'Camera permission needed',
+            'Enable camera access from Settings to take photos.'
+          );
+          break;
+        default:
+          Alert.alert('Unable to open camera', 'Please try again later.');
+          break;
+      }
+      return;
+    }
+
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
       setImageMultipleUri((prevUris) => [
         ...prevUris,
         result.assets[0].uri as string,
@@ -680,12 +815,54 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
     setEditMessageModal(false);
   };
 
+  const goBack = () => {
+    if (defaultChannelId) {
+      navigation.navigate('RecentChat');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'RecentChat' }],
+        })
+      );
+      setChannelId('');
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  useEffect(() => {
+    let unsubscribe: Amity.Unsubscriber | undefined;
+
+    // Check if channel exists and set up listener
+    if (connectionState === 'connected') {
+      unsubscribe = ChannelRepository.getChannel(
+        channelId,
+        ({ data: channel }) => {
+          if (channel && channel.isDeleted) {
+            setIsDeletedChannel(true);
+          }
+        }
+      );
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [channelId, connectionState]);
+
+  useEffect(() => {
+    if (isDeletedChannel) {
+      navigation.navigate('RecentChat');
+      Alert.alert('Channel no longer exists');
+    }
+  }, [channelId, isDeletedChannel]);
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.topBarContainer} edges={['top']}>
         <View style={styles.topBar}>
           <View style={styles.chatTitleWrap}>
-            <BackButton />
+            <BackButton onPress={goBack} />
 
             {chatReceiver ? (
               chatReceiver?.avatarFileId ? (
