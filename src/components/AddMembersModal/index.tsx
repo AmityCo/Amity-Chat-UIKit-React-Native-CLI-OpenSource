@@ -51,6 +51,7 @@ const AddMembersModal = ({
   const [isShowSectionHeader, setIsShowSectionHeader] =
     useState<boolean>(false);
   const { client } = useAuth();
+
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
   const queryAccounts = (text: string = '') => {
@@ -74,7 +75,7 @@ const AddMembersModal = ({
     setSearchTerm('');
   };
 
-  const createSectionGroup = () => {
+  const createSectionGroup = React.useCallback(() => {
     const sectionUserArr = userArr.map((item) => {
       return {
         userId: item.userId,
@@ -83,11 +84,11 @@ const AddMembersModal = ({
       };
     });
     setSectionedUserList(sectionUserArr);
-  };
+  }, [userArr]);
 
   useEffect(() => {
     createSectionGroup();
-  }, [userArr]);
+  }, [createSectionGroup, userArr]);
 
   useEffect(() => {
     if (searchTerm.length === 0) {
@@ -145,15 +146,17 @@ const AddMembersModal = ({
     return (
       <View style={styles.sectionItem}>
         {isrenderheader && <SectionHeader title={currentLetter} />}
-        <UserItem
-          isUserAccount={
-            (client as Amity.Client).userId === userObj.userId ? true : false
-          }
-          showThreeDot={false}
-          user={userObj}
-          isCheckmark={selectedUser}
-          onPress={onUserPressed}
-        />
+        {(client as Amity.Client).userId !== userObj.userId && (
+          <UserItem
+            isUserAccount={
+              (client as Amity.Client).userId === userObj.userId ? true : false
+            }
+            showThreeDot={false}
+            user={userObj}
+            isCheckmark={selectedUser}
+            onPress={onUserPressed}
+          />
+        )}
       </View>
     );
   };
@@ -171,6 +174,7 @@ const AddMembersModal = ({
   };
   const handleOnClose = () => {
     setSelectedUserList(initUserList);
+    setSearchTerm('');
     onClose && onClose();
   };
   const handleLoadMore = () => {
@@ -187,6 +191,7 @@ const AddMembersModal = ({
   const onDone = () => {
     onFinish && onFinish(selectedUserList);
     setSelectedUserList([]);
+    setSearchTerm('');
     onClose && onClose();
   };
 
@@ -224,18 +229,12 @@ const AddMembersModal = ({
             value={searchTerm}
             onChangeText={handleChange}
           />
-          <TouchableOpacity onPress={clearButton}>
-            <CircleCloseIcon color={theme.colors.base} />
-          </TouchableOpacity>
+          {searchTerm?.trim()?.length > 0 && (
+            <TouchableOpacity onPress={clearButton}>
+              <CircleCloseIcon color={theme.colors.base} />
+            </TouchableOpacity>
+          )}
         </View>
-        {selectedUserList.length > 0 ? (
-          <SelectedUserHorizontal
-            users={selectedUserList}
-            onDeleteUserPressed={onDeleteUserPressed}
-          />
-        ) : (
-          <View />
-        )}
         <FlatList
           data={sectionedUserList}
           renderItem={renderItem}
@@ -243,9 +242,19 @@ const AddMembersModal = ({
           onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.userId}
           ListHeaderComponent={
-            isShowSectionHeader ? renderSectionHeader : <View />
+            <>
+              {selectedUserList.length > 0 && (
+                <SelectedUserHorizontal
+                  users={selectedUserList}
+                  onDeleteUserPressed={onDeleteUserPressed}
+                />
+              )}
+              {isShowSectionHeader ? renderSectionHeader() : null}
+            </>
           }
-          stickyHeaderIndices={[0]}
+          stickyHeaderIndices={
+            isShowSectionHeader ? [selectedUserList.length > 0 ? 1 : 0] : []
+          }
           ref={flatListRef}
           onScroll={handleScroll}
         />

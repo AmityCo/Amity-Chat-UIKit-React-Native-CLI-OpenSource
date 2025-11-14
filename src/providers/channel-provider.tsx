@@ -1,11 +1,8 @@
-import {
-  ChannelRepository,
-} from '@amityco/ts-sdk-react-native';
+import { ChannelRepository } from '@amityco/ts-sdk-react-native';
 
 import { getAmityUser } from './user-provider';
 import type { UserInterface } from '../types/user.interface';
 import { Alert } from 'react-native';
-
 
 export async function createAmityChannel(
   currentUserID: string,
@@ -16,7 +13,8 @@ export async function createAmityChannel(
       return reject(new Error('Insufficient member count'));
     }
 
-    let channelType: Amity.ChannelType = users.length > 1 ? 'community' : 'conversation';
+    let channelType: Amity.ChannelType =
+      users.length > 1 ? 'community' : 'conversation';
     let userIds: string[] = [currentUserID];
     const { userObject } = await getAmityUser(currentUserID);
     let displayName = userObject.data.displayName! + ', ';
@@ -49,15 +47,24 @@ export async function leaveAmityChannel(
   return await new Promise(async (resolve, reject) => {
     try {
       const didLeaveChannel = await ChannelRepository.leaveChannel(channelID);
-      if(didLeaveChannel){
-        resolve(true)
+      if (didLeaveChannel) {
+        resolve(true);
       }
-      
     } catch (error) {
-      Alert.alert('Unable to leave channel due to ' + error, '', []);
+      Alert.alert(
+        'Unable to leave channel',
+        `Can't remove role because the channel are the only 1 active moderator.`,
+        [
+          {
+            text: 'OK',
+            style: 'destructive',
+            onPress: () => {},
+          },
+        ]
+      );
+
       reject(new Error('Unable to leave channel ' + error));
     }
-
   });
 }
 
@@ -67,7 +74,6 @@ export async function updateAmityChannel(
   displayName: string | undefined
 ): Promise<Amity.InternalChannel<any>> {
   let option = {};
-
 
   return await new Promise(async (resolve, reject) => {
     if (fileId && !displayName) {
@@ -87,24 +93,19 @@ export async function updateAmityChannel(
       return reject(
         new Error(
           'Display name and image path is missing' +
-          fileId +
-          ' --- ' +
-          displayName
+            fileId +
+            ' --- ' +
+            displayName
         )
       );
     }
     try {
-      const {data} = await ChannelRepository.updateChannel(channelID, option);
-      if(data){
-         resolve(data);
+      const { data } = await ChannelRepository.updateChannel(channelID, option);
+      if (data) {
+        resolve(data);
       }
     } catch (error) {
       reject(new Error('Unable to create channel ' + error));
     }
-   
-
   });
 }
-
-
-

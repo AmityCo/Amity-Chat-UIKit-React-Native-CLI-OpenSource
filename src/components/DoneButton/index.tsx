@@ -8,16 +8,20 @@ import {
 import { useStyles } from './styles';
 export default function DoneButton({
   onDonePressed,
+  disabled = false,
+  text = 'Done',
 }: {
-  navigation: any;
   onDonePressed: { (event: GestureResponderEvent): void };
+  disabled?: boolean;
+  text?: string;
 }) {
-
   const styles = useStyles();
   return (
-    <TouchableOpacity onPress={onDonePressed}>
+    <TouchableOpacity onPress={onDonePressed} disabled={disabled}>
       <View style={styles.icon}>
-        <Text style={styles.doneText}>Done</Text>
+        <Text style={[styles.doneText, disabled && styles.disabledText]}>
+          {text}
+        </Text>
       </View>
     </TouchableOpacity>
   );

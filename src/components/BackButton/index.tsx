@@ -14,13 +14,13 @@ export default function BackButton({ onPress }: IBackBtn) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   return (
     <TouchableOpacity
+      style={{ padding: 4 }}
       onPress={() => {
         if (onPress) {
           onPress();
         } else {
           navigation.goBack();
         }
-
       }}
     >
       <BackIcon color={theme.colors.base} />

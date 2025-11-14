@@ -29,116 +29,119 @@ export type SelectUserList = {
 };
 
 export default function MemberDetail({ route, navigation }: any) {
-
   const styles = useStyles();
-  const { client } = useAuth()
+  const { client } = useAuth();
   const { channelID } = route.params;
-  const permission = useChannelPermission(channelID)
-  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>([]);
+  const permission = useChannelPermission(channelID);
+  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(
+    []
+  );
 
-  const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
+  const [usersObject, setUsersObject] =
+    useState<Amity.LiveCollection<Amity.Membership<'channel'>>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex, setTabIndex] = useState<number>(1)
+  const [tabIndex, setTabIndex] = useState<number>(1);
   const [actionModalVisible, setActionModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserInterface>()
-  const [isSelectedUserModerator, setIsSelectedUserModerator] = useState<boolean>(false)
+  const [selectedUser, setSelectedUser] = useState<UserInterface>();
+  const [isSelectedUserModerator, setIsSelectedUserModerator] =
+    useState<boolean>(false);
   let { data: userArr = [], onNextPage } = usersObject ?? {};
-
 
   const theme = useTheme() as MyMD3Theme;
 
-  const queryAccounts = (text: string = '', roles?: string[]) => {
-
-    ChannelRepository.Membership.getMembers(
-      { channelId: channelID, limit: 15, search: text, roles: roles ?? [] },
-      (data) => {
-        setUsersObject(data)
-
-      }
-    );
-
-
-  };
+  const queryAccounts = React.useCallback(
+    (text: string = '', roles?: string[]) => {
+      ChannelRepository.Membership.getMembers(
+        { channelId: channelID, limit: 15, search: text, roles: roles ?? [] },
+        (data) => {
+          setUsersObject(data);
+        }
+      );
+    },
+    [channelID]
+  );
   const handleChange = (text: string) => {
     setSearchTerm(text);
   };
   useEffect(() => {
     if (searchTerm.length > 0 && tabIndex === 1) {
       queryAccounts(searchTerm);
-    }
-    else if (searchTerm.length > 0 && tabIndex === 2) {
+    } else if (searchTerm.length > 0 && tabIndex === 2) {
       queryAccounts(searchTerm, ['channel-moderator']);
     }
-  }, [searchTerm]);
+  }, [queryAccounts, searchTerm, tabIndex]);
 
   const clearButton = () => {
     setSearchTerm('');
   };
 
-  const createUserList = () => {
+  const createUserList = React.useCallback(() => {
     const sectionUserArr = userArr.map((item) => {
-      return { userId: item.userId, displayName: item.user?.displayName as string, avatarFileId: item.user?.avatarFileId as string }
-    })
-    setSectionedUserList(sectionUserArr)
-
-  }
+      return {
+        userId: item.userId,
+        displayName: item.user?.displayName as string,
+        avatarFileId: item.user?.avatarFileId as string,
+      };
+    });
+    setSectionedUserList(sectionUserArr);
+  }, [userArr]);
 
   useEffect(() => {
-    createUserList()
-  }, [userArr])
+    createUserList();
+  }, [createUserList]);
 
   useEffect(() => {
     if (searchTerm.length === 0 && tabIndex === 1) {
-      queryAccounts()
+      queryAccounts();
     } else if (searchTerm.length === 0 && tabIndex === 2) {
-      queryAccounts('', ['channel-moderator'])
+      queryAccounts('', ['channel-moderator']);
     }
-
-  }, [tabIndex, searchTerm])
-
-
+  }, [tabIndex, searchTerm, queryAccounts]);
 
   const onUserPressed = (user: UserInterface) => {
     setSelectedUser(user);
-    setActionModalVisible(true)
-    const index = userArr.findIndex(item => item.userId === user.userId);
+    setActionModalVisible(true);
+    const index = userArr.findIndex((item) => item.userId === user.userId);
     if (userArr[index]?.roles.includes('channel-moderator')) {
-      setIsSelectedUserModerator(true)
+      setIsSelectedUserModerator(true);
     } else {
-      setIsSelectedUserModerator(false)
+      setIsSelectedUserModerator(false);
     }
-
-
   };
 
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-
-    const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
+    const userObj: UserInterface = {
+      userId: item.userId,
+      displayName: item.displayName as string,
+      avatarFileId: item.avatarFileId as string,
+    };
     return (
-      <UserItem showThreeDot={true} isUserAccount={(client as Amity.Client).userId === userObj.userId ? true : false} user={userObj} onThreeDotTap={onUserPressed} />
+      <UserItem
+        showThreeDot={true}
+        isUserAccount={
+          (client as Amity.Client).userId === userObj.userId ? true : false
+        }
+        user={userObj}
+        onThreeDotTap={onUserPressed}
+      />
     );
   };
 
-
   const handleLoadMore = () => {
     if (onNextPage) {
-      onNextPage()
+      onNextPage();
     }
-  }
-
+  };
 
   const handleGoBack = () => {
-    navigation.goBack()
-  }
+    navigation.goBack();
+  };
 
   const handleTabChange = (index: number) => {
-    setTabIndex(index)
-
-
-  }
+    setTabIndex(index);
+  };
 
   return (
-
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
@@ -148,7 +151,10 @@ export default function MemberDetail({ route, navigation }: any) {
           <Text style={styles.headerText}>Member Detail</Text>
         </View>
       </View>
-      <CustomTab tabName={['Members', 'Moderators']} onTabChange={handleTabChange} />
+      <CustomTab
+        tabName={['Members', 'Moderators']}
+        onTabChange={handleTabChange}
+      />
       <View style={styles.inputWrap}>
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
           <SearchIcon color={theme.colors.base} />
@@ -158,9 +164,11 @@ export default function MemberDetail({ route, navigation }: any) {
           value={searchTerm}
           onChangeText={handleChange}
         />
-        <TouchableOpacity onPress={clearButton}>
-          <CircleCloseIcon color={theme.colors.base} />
-        </TouchableOpacity>
+        {searchTerm.length > 0 && (
+          <TouchableOpacity onPress={clearButton}>
+            <CircleCloseIcon color={theme.colors.base} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList
@@ -169,7 +177,6 @@ export default function MemberDetail({ route, navigation }: any) {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         keyExtractor={(item) => item.userId}
-
       />
       <MemberActionModal
         isVisible={actionModalVisible}
@@ -181,6 +188,5 @@ export default function MemberDetail({ route, navigation }: any) {
         isChannelModerator={isSelectedUserModerator}
       />
     </View>
-
   );
 }
