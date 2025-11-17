@@ -5,12 +5,11 @@ import useAuth from './../hooks/useAuth';
 export const useChannelPermission = (targetId: string) => {
   const { client } = useAuth();
   const hasChannelPermission = useMemo(() => {
-
     const channelPermission = (client as Amity.Client)
-      ?.hasPermission(Permissions.AddChannelUserPermission).channel(targetId)
-      channelPermission
- return channelPermission
-
+      ?.hasPermission(Permissions.EditChannelPermission)
+      .channel(targetId);
+    channelPermission;
+    return channelPermission;
   }, [client, targetId]);
   return hasChannelPermission;
 };

@@ -90,7 +90,7 @@ export const useStyles = () => {
       alignItems: 'center',
       paddingHorizontal: 10,
     },
-    input: { flex: 1, marginHorizontal: 6, padding: 10 },
+    input: { flex: 1, marginHorizontal: 6, padding: 10, color: theme.colors.base },
     cancelBtn: {
       marginRight: 16,
     },

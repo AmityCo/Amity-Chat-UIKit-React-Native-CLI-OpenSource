@@ -43,6 +43,7 @@ import {
   SubChannelRepository,
 } from '@amityco/ts-sdk-react-native';
 import useAuth from '../../hooks/useAuth';
+import { useMessageFlaggedByMe } from '../../hooks/useMessageFlaggedByMe';
 
 import ImagePicker, {
   launchImageLibrary,
@@ -100,6 +101,130 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
+
+interface MessageMenuProps {
+  message: IMessage;
+  isUserChat: boolean;
+  styles: any;
+  openFullImage: (image: string, messageType: string) => void;
+  deleteMessage: (messageId: string) => Promise<any>;
+  openEditMessageModal: (messageId: string, text: string) => void;
+}
+
+const MessageMenu: React.FC<MessageMenuProps> = ({
+  message,
+  isUserChat,
+  styles,
+  openFullImage,
+  deleteMessage,
+  openEditMessageModal,
+}) => {
+  const { isFlaggedByMe, mutateReportMessage, mutateUnreportMessage } =
+    useMessageFlaggedByMe({
+      messageId: message._id,
+    });
+
+  return (
+    <Menu
+      style={[
+        isUserChat ? styles.currentUserMessage : styles.friendUserMessage,
+      ]}
+    >
+      <MenuTrigger
+        onAlternativeAction={() =>
+          message.image && openFullImage(message.image, message.messageType)
+        }
+        customStyles={{
+          triggerTouchable: { underlayColor: 'transparent' },
+        }}
+        triggerOnLongPress
+      >
+        {message.messageType === 'text' ? (
+          <View
+            key={message._id}
+            style={[
+              styles.textChatBubble,
+              isUserChat ? styles.userBubble : styles.friendBubble,
+            ]}
+          >
+            <Text
+              style={isUserChat ? styles.chatUserText : styles.chatFriendText}
+            >
+              {message.text}
+            </Text>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.imageChatBubble,
+              isUserChat ? styles.userImageBubble : styles.friendBubble,
+            ]}
+          >
+            <Image
+              style={styles.imageMessage}
+              source={{
+                uri: message.image + '?size=medium',
+              }}
+            />
+          </View>
+        )}
+      </MenuTrigger>
+      <MenuOptions
+        customStyles={{
+          optionsContainer: {
+            ...styles.optionsContainer,
+            marginTop: isUserChat && message.messageType === 'text' ? -75 : -50,
+          },
+        }}
+      >
+        {isUserChat ? (
+          <MenuOption
+            onSelect={() =>
+              Alert.alert(
+                'Delete this message?',
+                `Message will be also be permanently removed from your friend's devices.`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => deleteMessage(message._id),
+                  },
+                ]
+              )
+            }
+          >
+            <Text style={styles.optionText}>Delete</Text>
+          </MenuOption>
+        ) : (
+          <MenuOption
+            onSelect={() => {
+              if (isFlaggedByMe) {
+                mutateUnreportMessage();
+              } else {
+                mutateReportMessage();
+              }
+            }}
+          >
+            <Text style={styles.optionText}>
+              {isFlaggedByMe ? 'Unreport' : 'Report'}
+            </Text>
+          </MenuOption>
+        )}
+        {message.messageType === 'text' && isUserChat && (
+          <MenuOption
+            onSelect={() => {
+              return openEditMessageModal(message._id, message.text as string);
+            }}
+          >
+            <Text style={styles.optionText}>Edit</Text>
+          </MenuOption>
+        )}
+      </MenuOptions>
+    </Menu>
+  );
+};
+
 const ChatRoom = ({ defaultChannelId = '' }) => {
   const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
   const { channelList } = useSelector((state: RootState) => state.recentChat);
@@ -131,6 +256,9 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     useState<Amity.Membership<'channel'>[]>();
   const [channelObject, setChannelObject] = useState<Amity.Channel>();
   const theme = useTheme() as MyMD3Theme;
+  const shouldCancelUploadsRef = useRef<boolean>(false);
+  const imageQueueRef = useRef<string[]>([]);
+  const displayImagesRef = useRef<IDisplayImage[]>([]);
 
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
@@ -242,6 +370,9 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     useCallback(() => {
       let disposers: Amity.Unsubscriber[] = [];
       startRead();
+
+      // Reset upload cancellation flag when entering the chat room
+      shouldCancelUploadsRef.current = false;
 
       if (connectionState === 'connected') {
         if (defaultChannelId && !channelIdParam) {
@@ -429,13 +560,6 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     return message;
   };
 
-  const reportMessage = async (messageId: string) => {
-    const isFlagged = await MessageRepository.flagMessage(messageId);
-    if (isFlagged) {
-      Alert.alert('Report sent ✅');
-    }
-  };
-
   const renderChatMessages = (message: IMessage, index: number) => {
     const isUserChat: boolean =
       message?.user?._id === (client as Amity.Client).userId;
@@ -490,112 +614,14 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
                 </View>
               </View>
             ) : (
-              <Menu
-                style={[
-                  isUserChat
-                    ? styles.currentUserMessage
-                    : styles.friendUserMessage,
-                ]}
-              >
-                <MenuTrigger
-                  onAlternativeAction={() =>
-                    message.image &&
-                    openFullImage(message.image, message.messageType)
-                  }
-                  customStyles={{
-                    triggerTouchable: { underlayColor: 'transparent' },
-                  }}
-                  triggerOnLongPress
-                >
-                  {message.messageType === 'text' ? (
-                    <View
-                      key={message._id}
-                      style={[
-                        styles.textChatBubble,
-                        isUserChat ? styles.userBubble : styles.friendBubble,
-                      ]}
-                    >
-                      <Text
-                        style={
-                          isUserChat
-                            ? styles.chatUserText
-                            : styles.chatFriendText
-                        }
-                      >
-                        {message.text}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View
-                      style={[
-                        styles.imageChatBubble,
-                        isUserChat
-                          ? styles.userImageBubble
-                          : styles.friendBubble,
-                      ]}
-                    >
-                      <Image
-                        style={styles.imageMessage}
-                        source={{
-                          uri: message.image + '?size=medium',
-                        }}
-                      />
-                    </View>
-                  )}
-                </MenuTrigger>
-                <MenuOptions
-                  customStyles={{
-                    optionsContainer: {
-                      ...styles.optionsContainer,
-                      marginTop:
-                        isUserChat && message.messageType === 'text'
-                          ? -75
-                          : -50,
-                    },
-                  }}
-                >
-                  {isUserChat ? (
-                    <MenuOption
-                      onSelect={() =>
-                        Alert.alert(
-                          'Delete this message?',
-                          `Message will be also be permanently removed from your friend's devices.`,
-                          [
-                            { text: 'Cancel', style: 'cancel' },
-                            {
-                              text: 'Delete',
-                              style: 'destructive',
-                              onPress: () => deleteMessage(message._id),
-                            },
-                          ]
-                        )
-                      }
-                    >
-                      <Text style={styles.optionText}>Delete</Text>
-                    </MenuOption>
-                  ) : (
-                    <MenuOption
-                      onSelect={() => {
-                        reportMessage(message._id);
-                      }}
-                    >
-                      <Text style={styles.optionText}>Report</Text>
-                    </MenuOption>
-                  )}
-                  {message.messageType === 'text' && isUserChat && (
-                    <MenuOption
-                      onSelect={() => {
-                        return openEditMessageModal(
-                          message._id,
-                          message.text as string
-                        );
-                      }}
-                    >
-                      <Text style={styles.optionText}>Edit</Text>
-                    </MenuOption>
-                  )}
-                </MenuOptions>
-              </Menu>
+              <MessageMenu
+                message={message}
+                isUserChat={isUserChat}
+                styles={styles}
+                openFullImage={openFullImage}
+                deleteMessage={deleteMessage}
+                openEditMessageModal={openEditMessageModal}
+              />
             )}
             <Text
               style={[
@@ -695,10 +721,12 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     }
 
     if (!result.didCancel && result.assets && result.assets.length > 0) {
-      setImageMultipleUri((prevUris) => [
-        ...prevUris,
-        result.assets[0].uri as string,
-      ]);
+      const newUri = result.assets[0].uri as string;
+      setImageMultipleUri((prevUris) => {
+        const updated = [...prevUris, newUri];
+        imageQueueRef.current = updated;
+        return updated;
+      });
     }
   };
 
@@ -714,31 +742,40 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   };
 
   const handleOnFinishImage = async (fileId: string, originalPath: string) => {
+    // Don't process if uploads have been cancelled
+    if (shouldCancelUploadsRef.current) {
+      return;
+    }
+
     // Create message with the uploaded file
     await createImageMessage(fileId);
 
     // Remove the processed image from both arrays
-    setTimeout(() => {
-      setDisplayImages((prevData) => {
-        const newData: IDisplayImage[] = prevData.filter(
-          (item: IDisplayImage) => item.url !== originalPath
-        );
-        return newData;
-      });
+    // Update refs immediately to ensure goBack always has current state
+    setDisplayImages((prevData) => {
+      const newData: IDisplayImage[] = prevData.filter(
+        (item: IDisplayImage) => item.url !== originalPath
+      );
+      displayImagesRef.current = newData;
+      return newData;
+    });
 
-      setImageMultipleUri((prevData) => {
-        const newData = prevData.filter((url: string) => url !== originalPath);
-        return newData;
-      });
+    setImageMultipleUri((prevData) => {
+      const newData = prevData.filter((url: string) => url !== originalPath);
+      imageQueueRef.current = newData;
+      return newData;
+    });
 
-      // Set uploading state to false to allow processing next image
-      setIsUploading(false);
-    }, 0);
+    // Set uploading state to false to allow processing next image
+    setIsUploading(false);
   };
 
   // Process image queue - this useEffect will manage which image to upload next
   useEffect(() => {
     const processNextImage = () => {
+      // Don't process if uploads have been cancelled
+      if (shouldCancelUploadsRef.current) return;
+
       // If we're uploading or there are no images in queue, do nothing
       if (isUploading || imageMultipleUri.length === 0) return;
 
@@ -758,6 +795,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
 
       // Set the image for upload and mark as uploading
       setDisplayImages([nextImageObject]);
+      displayImagesRef.current = [nextImageObject];
       setIsUploading(true);
     };
 
@@ -777,7 +815,11 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       ) as string[];
 
       // Add all selected images to the queue
-      setImageMultipleUri((prevUris) => [...prevUris, ...imageUriArr]);
+      setImageMultipleUri((prevUris) => {
+        const updated = [...prevUris, ...imageUriArr];
+        imageQueueRef.current = updated;
+        return updated;
+      });
     }
   };
 
@@ -815,7 +857,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     setEditMessageModal(false);
   };
 
-  const goBack = () => {
+  const handleNavigation = () => {
     if (defaultChannelId) {
       navigation.navigate('RecentChat');
       navigation.dispatch(
@@ -827,6 +869,45 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       setChannelId('');
     } else {
       navigation.goBack();
+    }
+  };
+
+  const goBack = () => {
+    // Check if images are still uploading or if there are pending images in the queue
+
+    const hasPendingImages = displayImagesRef.current.length > 0;
+    const hasImagesInQueue = imageQueueRef.current.length > 0;
+
+    if (hasPendingImages || hasImagesInQueue) {
+      Alert.alert(
+        'Upload in Progress',
+        'Images are still uploading. Are you sure you want to leave? Your images will not be sent.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => {
+              // Set flag to cancel any ongoing or pending uploads
+              shouldCancelUploadsRef.current = true;
+
+              // Clear upload states
+              setIsUploading(false);
+              setDisplayImages([]);
+              setImageMultipleUri([]);
+              displayImagesRef.current = [];
+              imageQueueRef.current = [];
+
+              handleNavigation();
+            },
+          },
+        ]
+      );
+    } else {
+      handleNavigation();
     }
   };
 

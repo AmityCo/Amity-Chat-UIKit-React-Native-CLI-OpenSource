@@ -9,6 +9,7 @@ import { GroupMembersIcon } from '../../svg/GroupMembersIcon';
 import { BackIcon } from '../../svg/BackIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { useChannelPermission } from '../../hooks/useChannelPermission';
 
 interface ChatDetailProps {
   navigation: any;
@@ -22,6 +23,9 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
   const theme = useTheme() as MyMD3Theme;
   const styles = useStyles();
   const { channelId, channelType, chatReceiver, groupChat } = route.params;
+
+  const permission = useChannelPermission(channelId);
+
   const handleGroupProfilePress = () => {
     navigation.navigate('EditChatRoomDetail', {
       channelId: channelId,
@@ -83,17 +87,20 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
     switch (item.id) {
       case 1:
         return (
-          <TouchableOpacity
-            style={styles.rowContainer}
-            onPress={handleGroupProfilePress}
-          >
-            <View style={styles.iconContainer}>
-              <EditIcon />
-            </View>
-            <Text style={styles.rowText}>Group profile</Text>
-            <ArrowRightIcon />
-          </TouchableOpacity>
+          permission && (
+            <TouchableOpacity
+              style={styles.rowContainer}
+              onPress={handleGroupProfilePress}
+            >
+              <View style={styles.iconContainer}>
+                <EditIcon />
+              </View>
+              <Text style={styles.rowText}>Group profile</Text>
+              <ArrowRightIcon color={theme.colors.base} />
+            </TouchableOpacity>
+          )
         );
+
       case 2:
         return (
           <TouchableOpacity

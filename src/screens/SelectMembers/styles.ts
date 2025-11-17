@@ -1,7 +1,7 @@
 import { Platform, StyleSheet } from "react-native";
 
-
-export const styles = StyleSheet.create({
+export const useStyles = () => {
+  const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: 'white',
@@ -83,7 +83,7 @@ export const styles = StyleSheet.create({
       justifyContent: 'space-between',
       marginVertical: 10,
     },
-    input: { flex: 1, marginHorizontal: 6 },
+    input: { flex: 1, marginHorizontal: 6, color: '#fffff' },
     cancelBtn: {
       marginRight: 16,
     },
@@ -98,4 +98,5 @@ export const styles = StyleSheet.create({
       opacity: 0.5
     }
   });
-  
+  return styles;
+}

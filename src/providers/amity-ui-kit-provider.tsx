@@ -93,7 +93,7 @@ export default function AmityUiKitProvider({
       chatMessageTexts: {
         userMessageText: theme?.chatMessageTexts?.userMessageText ?? '#FFFFFF',
         friendMessageText:
-          theme?.chatMessageTexts?.friendMessageText ?? '#292B32',
+          theme?.chatMessageTexts?.friendMessageText ?? '#FFFFFF',
       },
       chatTopBar: theme?.chatTopBar ?? '#292B32',
     },
