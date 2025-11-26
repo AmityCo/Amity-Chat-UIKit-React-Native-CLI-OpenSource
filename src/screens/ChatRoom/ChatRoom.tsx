@@ -260,6 +260,15 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const imageQueueRef = useRef<string[]>([]);
   const displayImagesRef = useRef<IDisplayImage[]>([]);
 
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      navigation.setOptions({
+        gestureEnabled: false,
+        fullScreenGestureEnabled: false,
+      });
+    }
+  }, [navigation]);
+
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
       if (channel) {
@@ -414,6 +423,49 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
       };
     }, [channelId, connectionState])
   );
+
+  // Handle swipe back while uploading
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
+      const hasPendingImages = displayImagesRef.current.length > 0;
+      const hasImagesInQueue = imageQueueRef.current.length > 0;
+
+      if (!hasPendingImages || !hasImagesInQueue) {
+        return;
+      }
+
+      e.preventDefault();
+
+      Alert.alert(
+        'Upload in Progress',
+        'Images are still uploading. Are you sure you want to leave? Your images will not be sent.',
+        [
+          {
+            text: 'Stay',
+            style: 'cancel',
+          },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => {
+              shouldCancelUploadsRef.current = true;
+
+              setIsUploading(false);
+              setDisplayImages([]);
+              setImageMultipleUri([]);
+              displayImagesRef.current = [];
+              imageQueueRef.current = [];
+
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const chatFormatter = async () => {
     if (messagesArr.length > 0) {
