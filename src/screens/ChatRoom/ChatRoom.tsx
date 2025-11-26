@@ -260,6 +260,13 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
   const imageQueueRef = useRef<string[]>([]);
   const displayImagesRef = useRef<IDisplayImage[]>([]);
 
+  useEffect(() => {
+    navigation.setOptions({
+      gestureEnabled: false,
+      fullScreenGestureEnabled: false,
+    });
+  }, [navigation]);
+
   const queryChannelObject = () => {
     ChannelRepository.getChannel(defaultChannelId, ({ data: channel }) => {
       if (channel) {
