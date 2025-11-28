@@ -108,32 +108,33 @@ const AddMembersModal = ({
 
   const renderItem = ({ item, index }: ListRenderItemInfo<UserInterface>) => {
     let isrenderheader = true;
-    const isAlphabet = /^[A-Z]$/i.test(item.displayName?.trim().charAt(0));
+    const isAlphabet = /^[A-Z]$/i.test(item.displayName?.trim()?.charAt(0));
     const currentLetter = isAlphabet
-      ? item.displayName?.trim().charAt(0).toUpperCase()
+      ? item.displayName?.trim()?.charAt(0)?.toUpperCase()
       : '#';
     const selectedUser = selectedUserList.some(
       (user) => user.userId === item.userId
     );
     const userObj: UserInterface = {
       userId: item.userId,
-      displayName: item.displayName as string,
-      avatarFileId: item.avatarFileId as string,
+      displayName: item.displayName,
+      avatarFileId: item.avatarFileId,
     };
 
     if (index > 0 && sectionedUserList.length > 0) {
-      const previousItem = sectionedUserList[index - 1];
-
-      const isPreviousLetterAlphabet = /^[A-Z]$/i.test(
-        previousItem.displayName?.trim().charAt(0)
-      );
-      const previousLetter = isPreviousLetterAlphabet
-        ? previousItem.displayName?.trim().charAt(0).toUpperCase()
-        : '#';
-      if (currentLetter === previousLetter) {
-        isrenderheader = false;
-      } else {
-        isrenderheader = true;
+      const previousItem = sectionedUserList?.[index - 1];
+      if (previousItem) {
+        const isPreviousLetterAlphabet = /^[A-Z]$/i.test(
+          previousItem.displayName?.trim().charAt(0)
+        );
+        const previousLetter = isPreviousLetterAlphabet
+          ? previousItem.displayName?.trim().charAt(0).toUpperCase()
+          : '#';
+        if (currentLetter === previousLetter) {
+          isrenderheader = false;
+        } else {
+          isrenderheader = true;
+        }
       }
     }
 
