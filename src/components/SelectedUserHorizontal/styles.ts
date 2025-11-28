@@ -9,11 +9,13 @@ export const useStyles = () => {
       paddingLeft: 10,
       paddingVertical: 12,
       flexDirection: 'row',
+      gap: 10,
       backgroundColor: theme.colors.background,
     },
     avatarContainer: {
       width: 60,
-      marginRight: 10,
+      height: 100,
+      backgroundColor: theme.colors.background,
       alignItems: 'center',
     },
     avatar: {
@@ -52,8 +54,6 @@ export const useStyles = () => {
       fontSize: 13,
       textAlign: 'center',
       color: theme.colors.base,
-
-      width: '100%',
     },
   });
   return styles;

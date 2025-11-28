@@ -30,7 +30,7 @@ export default function SelectMembers() {
   const [usersObject, setUsersObject] =
     useState<Amity.LiveCollection<Amity.User>>();
   const [searchTerm, setSearchTerm] = useState('');
-    const styles = useStyles();
+  const styles = useStyles();
 
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
@@ -68,7 +68,7 @@ export default function SelectMembers() {
 
   useEffect(() => {
     createSectionGroup();
-  }, [userArr]);
+  }, []);
 
   useEffect(() => {
     if (searchTerm.length === 0) {
