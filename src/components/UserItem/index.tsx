@@ -15,19 +15,18 @@ export default function UserItem({
   showThreeDot,
   onPress,
   onThreeDotTap,
-  isUserAccount
+  isUserAccount,
 }: {
   user: UserInterface;
   isCheckmark?: boolean | undefined;
   showThreeDot?: boolean | undefined;
   onPress?: (user: UserInterface) => void;
   onThreeDotTap?: (user: UserInterface) => void;
-  isUserAccount?: boolean
+  isUserAccount?: boolean;
 }) {
-
   const theme = useTheme() as MyMD3Theme;
   const styles = useStyles();
-  const { apiRegion } = useAuth()
+  const { apiRegion } = useAuth();
   const [isChecked, setIsChecked] = useState(false);
   const maxLength = 25;
   const handleToggle = () => {
@@ -53,34 +52,33 @@ export default function UserItem({
   return (
     <TouchableOpacity style={styles.listItem} onPress={handleToggle}>
       <View style={styles.leftContainer}>
-        {
-          user?.avatarFileId ? (
-            <Image
-              style={styles.avatar}
-              source={{ uri: avatarFileURL(user.avatarFileId) }}
-            />
-          ) : (
-            <View style={styles.avatar}>
-              <AvatarIcon />
-            </View>
-          )
-        }
+        {user?.avatarFileId ? (
+          <Image
+            style={styles.avatar}
+            source={{ uri: avatarFileURL(user.avatarFileId) }}
+          />
+        ) : (
+          <View style={styles.avatar}>
+            <AvatarIcon />
+          </View>
+        )}
         <Text style={styles.itemText}>{displayName()}</Text>
       </View>
       {!isUserAccount && !showThreeDot ? (
         <RoundCheckbox isChecked={isCheckmark ?? false} />
       ) : (
-        !isUserAccount &&
-        <TouchableOpacity
-          style={styles.threedotsBtn}
-          onPress={() => {
-            if (onThreeDotTap) {
-              onThreeDotTap(user);
-            }
-          }}
-        >
-          <ThreeDotsIcon color={theme.colors.base} />
-        </TouchableOpacity>
+        !isUserAccount && (
+          <TouchableOpacity
+            style={styles.threedotsBtn}
+            onPress={() => {
+              if (onThreeDotTap) {
+                onThreeDotTap(user);
+              }
+            }}
+          >
+            <ThreeDotsIcon color={theme.colors.base} />
+          </TouchableOpacity>
+        )
       )}
     </TouchableOpacity>
   );

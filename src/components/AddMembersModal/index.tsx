@@ -5,11 +5,9 @@ import {
   View,
   Text,
   Modal,
-  type NativeScrollEvent,
   type ListRenderItemInfo,
   TextInput,
   FlatList,
-  type NativeSyntheticEvent,
 } from 'react-native';
 import { useStyles } from './styles';
 import type { UserInterface } from '../../types/user.interface';
@@ -48,8 +46,6 @@ const AddMembersModal = ({
   const [usersObject, setUsersObject] =
     useState<Amity.LiveCollection<Amity.User>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [isShowSectionHeader, setIsShowSectionHeader] =
-    useState<boolean>(false);
   const { client } = useAuth();
 
   const { data: userArr = [], onNextPage } = usersObject ?? {};
@@ -96,8 +92,6 @@ const AddMembersModal = ({
     }
   }, [visible, searchTerm]);
 
-  const renderSectionHeader = () => <SectionHeader title={''} />;
-
   const onUserPressed = (user: UserInterface) => {
     const isIncluded = selectedUserList.some(
       (item) => item.userId === user.userId
@@ -114,9 +108,9 @@ const AddMembersModal = ({
 
   const renderItem = ({ item, index }: ListRenderItemInfo<UserInterface>) => {
     let isrenderheader = true;
-    const isAlphabet = /^[A-Z]$/i.test(item.displayName[0] as string);
+    const isAlphabet = /^[A-Z]$/i.test(item.displayName?.trim().charAt(0));
     const currentLetter = isAlphabet
-      ? (item.displayName as string).charAt(0).toUpperCase()
+      ? item.displayName?.trim().charAt(0).toUpperCase()
       : '#';
     const selectedUser = selectedUserList.some(
       (user) => user.userId === item.userId
@@ -128,13 +122,13 @@ const AddMembersModal = ({
     };
 
     if (index > 0 && sectionedUserList.length > 0) {
-      const isPreviousletterAlphabet = /^[A-Z]$/i.test(
-        (sectionedUserList[index - 1] as any).displayName[0]
+      const previousItem = sectionedUserList[index - 1];
+
+      const isPreviousLetterAlphabet = /^[A-Z]$/i.test(
+        previousItem.displayName?.trim().charAt(0)
       );
-      const previousLetter = isPreviousletterAlphabet
-        ? (sectionedUserList[index - 1] as any).displayName
-            .charAt(0)
-            .toUpperCase()
+      const previousLetter = isPreviousLetterAlphabet
+        ? previousItem.displayName?.trim().charAt(0).toUpperCase()
         : '#';
       if (currentLetter === previousLetter) {
         isrenderheader = false;
@@ -163,15 +157,6 @@ const AddMembersModal = ({
 
   const flatListRef = useRef(null);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const yOffset = event.nativeEvent.contentOffset.y;
-
-    if (yOffset >= 40) {
-      setIsShowSectionHeader(true);
-    } else {
-      setIsShowSectionHeader(false);
-    }
-  };
   const handleOnClose = () => {
     setSelectedUserList(initUserList);
     setSearchTerm('');
@@ -235,28 +220,19 @@ const AddMembersModal = ({
             </TouchableOpacity>
           )}
         </View>
+        {selectedUserList.length > 0 && (
+          <SelectedUserHorizontal
+            users={selectedUserList}
+            onDeleteUserPressed={onDeleteUserPressed}
+          />
+        )}
         <FlatList
           data={sectionedUserList}
           renderItem={renderItem}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.userId}
-          ListHeaderComponent={
-            <>
-              {selectedUserList.length > 0 && (
-                <SelectedUserHorizontal
-                  users={selectedUserList}
-                  onDeleteUserPressed={onDeleteUserPressed}
-                />
-              )}
-              {isShowSectionHeader ? renderSectionHeader() : null}
-            </>
-          }
-          stickyHeaderIndices={
-            isShowSectionHeader ? [selectedUserList.length > 0 ? 1 : 0] : []
-          }
           ref={flatListRef}
-          onScroll={handleScroll}
         />
       </View>
     </Modal>
