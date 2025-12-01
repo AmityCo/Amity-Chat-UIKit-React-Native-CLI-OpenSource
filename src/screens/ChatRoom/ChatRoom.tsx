@@ -300,6 +300,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
           userId: item.userId as string,
           displayName: item.user?.displayName as string,
           avatarFileId: item.user?.avatarFileId as string,
+          avatarCustomUrl: item.user?.avatarCustomUrl ?? '',
         };
       });
       const groupChat: IGroupChatObject = {
@@ -324,6 +325,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         displayName: oneOnOneChatObject[targetIndex]?.user
           ?.displayName as string,
         avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
+        avatarCustomUrl: oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl ?? '',
       };
       setChatReceiver(chatReceiver);
     }
@@ -334,7 +336,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     onNextPage,
     hasNextPage,
   } = messagesData ?? {};
-
+  console.log('messagesArr: ', messagesArr);
   const [groupChatInfo, setGroupChatInfo] = useState<IGroupChatObject>({
     ...groupChat,
   });
@@ -441,13 +443,14 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               user: {
                 _id: userObject.data.userId ?? '',
                 name: userObject?.data?.displayName ?? '',
-                avatar: userObject?.data?.avatar?.fileUrl ?? '',
+                avatar:  userObject?.data?.avatar?.fileUrl ?? '',
               },
               messageType: item.dataType,
               isDeleted: item.isDeleted as boolean,
             };
           } else {
             const { userObject } = await getUserInfo(item.creatorId);
+            console.log('userObject: ', userObject);
 
             return {
               _id: item.messageId,
@@ -458,7 +461,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               user: {
                 _id: userObject.data.userId ?? '',
                 name: userObject?.data?.displayName ?? '',
-                avatar: userObject?.data?.avatar?.fileUrl ?? '',
+                avatar: userObject?.data?.avatarCustomUrl ? userObject?.data?.avatarCustomUrl : userObject?.data?.avatar?.fileUrl ?? '',
               },
               messageType: item.dataType,
               isDeleted: item.isDeleted as boolean,
@@ -953,11 +956,11 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
             <BackButton onPress={goBack} />
 
             {chatReceiver ? (
-              chatReceiver?.avatarFileId ? (
+              (chatReceiver?.avatarFileId || chatReceiver?.avatarCustomUrl) ? (
                 <Image
                   style={styles.avatar}
                   source={{
-                    uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                    uri: chatReceiver?.avatarCustomUrl ? chatReceiver?.avatarCustomUrl : `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
                   }}
                 />
               ) : (

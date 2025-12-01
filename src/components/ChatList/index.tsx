@@ -30,6 +30,7 @@ export interface IGroupChatObject {
   memberCount: number;
   users?: UserInterface[];
   avatarFileId: string | undefined;
+  avatarCustomUrl?: string | undefined;
 }
 const ChatList: React.FC<IChatListProps> = ({
   chatId,
@@ -52,7 +53,7 @@ const ChatList: React.FC<IChatListProps> = ({
   const [channelAvatarCustomUrl, setChannelAvatarCustomUrl] = useState<
     string | undefined
   >(undefined);
-
+  console.log('channelAvatarCustomUrl: ', channelAvatarCustomUrl);
   const [channelDisplayName, setChannelDisplayName] =
     useState<string>(chatName);
 
