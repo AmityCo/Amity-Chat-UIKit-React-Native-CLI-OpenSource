@@ -336,7 +336,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
     onNextPage,
     hasNextPage,
   } = messagesData ?? {};
-  console.log('messagesArr: ', messagesArr);
+
   const [groupChatInfo, setGroupChatInfo] = useState<IGroupChatObject>({
     ...groupChat,
   });
@@ -450,7 +450,6 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
             };
           } else {
             const { userObject } = await getUserInfo(item.creatorId);
-            console.log('userObject: ', userObject);
 
             return {
               _id: item.messageId,

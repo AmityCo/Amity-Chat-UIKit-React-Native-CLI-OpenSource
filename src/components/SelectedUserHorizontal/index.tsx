@@ -22,6 +22,7 @@ const AvatarListItem = ({
   user: UserInterface;
   onDelete: () => void;
 }) => {
+
   const styles = useStyles();
   const { apiRegion } = useAuth();
   const avatarFileURL = (fileId: string) => {
@@ -31,10 +32,10 @@ const AvatarListItem = ({
     <View style={styles.avatarContainer}>
       <View style={styles.avatar}>
         <View style={styles.avatarImageContainer}>
-          {user.avatarFileId ? (
+          {(user?.avatarFileId || user?.avatarCustomUrl) ? (
             <Image
               style={styles.avatarImage}
-              source={{ uri: avatarFileURL(user.avatarFileId) }}
+              source={{ uri: user?.avatarCustomUrl ? user?.avatarCustomUrl : avatarFileURL(user.avatarFileId) }}
             />
           ) : (
             <AvatarIcon />

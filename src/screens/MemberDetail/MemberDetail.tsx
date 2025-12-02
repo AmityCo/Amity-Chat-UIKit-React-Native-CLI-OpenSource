@@ -81,6 +81,7 @@ export default function MemberDetail({ route, navigation }: any) {
         userId: item.userId,
         displayName: item.user?.displayName as string,
         avatarFileId: item.user?.avatarFileId as string,
+        avatarCustomUrl: item.user?.avatarCustomUrl as string,
       };
     });
     setSectionedUserList(sectionUserArr);
@@ -114,6 +115,7 @@ export default function MemberDetail({ route, navigation }: any) {
       userId: item.userId,
       displayName: item.displayName as string,
       avatarFileId: item.avatarFileId as string,
+      avatarCustomUrl: item?.avatarCustomUrl as string,
     };
     return (
       <UserItem

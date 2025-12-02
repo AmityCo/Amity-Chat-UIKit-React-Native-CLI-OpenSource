@@ -53,7 +53,6 @@ const ChatList: React.FC<IChatListProps> = ({
   const [channelAvatarCustomUrl, setChannelAvatarCustomUrl] = useState<
     string | undefined
   >(undefined);
-  console.log('channelAvatarCustomUrl: ', channelAvatarCustomUrl);
   const [channelDisplayName, setChannelDisplayName] =
     useState<string>(chatName);
 
@@ -104,7 +103,6 @@ const ChatList: React.FC<IChatListProps> = ({
     ChannelRepository.Membership.getMembers(
       { channelId: chatId },
       ({ data: members }) => {
-        console.log('members: ', members);
         if (
           chatMemberNumber === 2 &&
           members &&

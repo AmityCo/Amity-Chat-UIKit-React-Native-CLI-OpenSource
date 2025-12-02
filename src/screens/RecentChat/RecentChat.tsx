@@ -30,7 +30,6 @@ import recentChatSlice from '../../redux/slices/RecentChatSlice';
 export default function RecentChat() {
   const { client, isConnected, error: loginError, sessionState } = useAuth();
   const { channelList } = useSelector((state: RootState) => state.recentChat);
-  console.log('channelList: ', channelList);
   const { connectionState } = useSelector(
     (state: RootState) => state.connectionState
   );

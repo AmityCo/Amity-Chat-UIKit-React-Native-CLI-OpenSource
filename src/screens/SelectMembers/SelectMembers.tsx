@@ -61,6 +61,7 @@ export default function SelectMembers() {
         userId: item.userId,
         displayName: item.displayName as string,
         avatarFileId: item.avatarFileId as string,
+        avatarCustomUrl: item?.avatarCustomUrl as string,
       };
     });
     setSectionedUserList(sectionUserArr);
@@ -98,6 +99,7 @@ export default function SelectMembers() {
       userId: item.userId,
       displayName: item.displayName as string,
       avatarFileId: item.avatarFileId as string,
+      avatarCustomUrl: item?.avatarCustomUrl as string,
     };
     return (
       <UserItem
