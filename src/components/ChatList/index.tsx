@@ -22,6 +22,7 @@ export interface IChatListProps {
   messageDate: string;
   channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
   avatarFileId: string | undefined;
+  tags?: string[];
 }
 
 export interface IGroupChatObject {
@@ -29,6 +30,7 @@ export interface IGroupChatObject {
   memberCount: number;
   users?: UserInterface[];
   avatarFileId: string | undefined;
+  avatarCustomUrl?: string | undefined;
 }
 const ChatList: React.FC<IChatListProps> = ({
   chatId,
@@ -48,6 +50,9 @@ const ChatList: React.FC<IChatListProps> = ({
   const [channelAvatarFileId, setChannelAvatarFileId] = useState<
     string | undefined
   >(avatarFileId);
+  const [channelAvatarCustomUrl, setChannelAvatarCustomUrl] = useState<
+    string | undefined
+  >(undefined);
   const [channelDisplayName, setChannelDisplayName] =
     useState<string>(chatName);
 
@@ -63,6 +68,7 @@ const ChatList: React.FC<IChatListProps> = ({
         displayName: oneOnOneChatObject[targetIndex]?.user
           ?.displayName as string,
         avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
+        avatarCustomUrl: oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl ?? '',
       };
       if (chatReceiver.userId) {
         navigation.navigate('ChatRoom', {
@@ -77,6 +83,7 @@ const ChatList: React.FC<IChatListProps> = ({
           userId: item.userId as string,
           displayName: item.user?.displayName as string,
           avatarFileId: item.user?.avatarFileId as string,
+          avatarCustomUrl: item.user?.avatarCustomUrl ?? '',
         };
       });
 
@@ -118,10 +125,14 @@ const ChatList: React.FC<IChatListProps> = ({
       const targetIndex: number = oneOnOneChatObject?.findIndex(
         (item) => item.userId !== (client as Amity.Client).userId
       );
+      if (oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl) {
+        setChannelAvatarCustomUrl(oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl)
+      } else {
+        setChannelAvatarFileId(
+          oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? avatarFileId
+        );
+      }
 
-      setChannelAvatarFileId(
-        oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? avatarFileId
-      );
       setChannelDisplayName(
         oneOnOneChatObject[targetIndex]?.user?.displayName as string
       );
@@ -132,11 +143,11 @@ const ChatList: React.FC<IChatListProps> = ({
     <TouchableHighlight onPress={() => handlePress(chatMemberNumber)}>
       <View style={styles.chatCard}>
         <View style={styles.avatarSection}>
-          {channelAvatarFileId ? (
+          {(channelAvatarFileId|| channelAvatarCustomUrl) ? (
             <Image
               style={styles.icon}
               source={{
-                uri: `https://api.${apiRegion}.amity.co/api/v3/files/${channelAvatarFileId}/download?size=small`,
+                uri: channelAvatarCustomUrl ? channelAvatarCustomUrl : `https://api.${apiRegion}.amity.co/api/v3/files/${channelAvatarFileId}/download?size=small`,
               }}
             />
           ) : (

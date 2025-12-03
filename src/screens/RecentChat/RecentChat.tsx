@@ -44,9 +44,7 @@ export default function RecentChat() {
 
   const flatListRef = useRef(null);
 
-  const [channelData, setChannelData] =
-    useState<Amity.LiveCollection<Amity.Channel>>();
-
+  const [channelData, setChannelData] = useState<Amity.LiveCollection<Amity.Channel>>();
   const { data: channels = [], onNextPage, hasNextPage } = channelData ?? {};
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -132,6 +130,7 @@ export default function RecentChat() {
           messageDate: dateDisplay ?? '',
           channelType: item.type ?? '',
           avatarFileId: item.avatarFileId,
+          tags: item.tags,
         };
       }
     );
@@ -161,6 +160,7 @@ export default function RecentChat() {
             userId: users[0].userId,
             displayName: users[0].displayName as string,
             avatarFileId: users[0].avatarFileId as string,
+            avatarCustomUrl: users[0]?.avatarCustomUrl
           };
 
           navigation.navigate('ChatRoom', {
@@ -174,6 +174,7 @@ export default function RecentChat() {
               userId: item.userId,
               displayName: item.displayName,
               avatarFileId: item.avatarFileId,
+              avatarCustomUrl: item?.avatarCustomUrl
             };
           });
           const groupChatObject: IGroupChatObject = {

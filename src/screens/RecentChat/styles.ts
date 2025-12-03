@@ -69,9 +69,11 @@ export const useStyles = () => {
     chatContainer: {
       flex: 1,
       backgroundColor: theme.colors.background,
+
     },
     chatListContainer: {
       paddingBottom: Platform.OS === 'ios' ? 65 : 35,
+      flex: 1
     },
     chatListEmptyState: {
       flex: 1,

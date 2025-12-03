@@ -77,6 +77,7 @@ const AddMembersModal = ({
         userId: item.userId,
         displayName: item.displayName as string,
         avatarFileId: item.avatarFileId as string,
+        avatarCustomUrl: item.avatarCustomUrl as string,
       };
     });
     setSectionedUserList(sectionUserArr);
@@ -119,6 +120,7 @@ const AddMembersModal = ({
       userId: item.userId,
       displayName: item.displayName,
       avatarFileId: item.avatarFileId,
+      avatarCustomUrl: item.avatarCustomUrl,
     };
 
     if (index > 0 && sectionedUserList.length > 0) {

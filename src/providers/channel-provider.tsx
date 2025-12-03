@@ -32,7 +32,7 @@ export async function createAmityChannel(
     };
 
     const { data: channel } = await ChannelRepository.createChannel(param);
-    console.log('param: ', param);
+
     if (channel) {
       resolve(channel as any);
     } else {
