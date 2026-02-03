@@ -22,6 +22,7 @@ import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import MemberActionModal from '../../components/MemberActionModal/MemberActionModal';
 import useAuth from '../../hooks/useAuth';
 import { useChannelPermission } from '../../hooks/useChannelPermission';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type SelectUserList = {
   title: string;
@@ -144,51 +145,53 @@ export default function MemberDetail({ route, navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-          <BackIcon color={theme.colors.base} />
-        </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>Member Detail</Text>
-        </View>
-      </View>
-      <CustomTab
-        tabName={['Members', 'Moderators']}
-        onTabChange={handleTabChange}
-      />
-      <View style={styles.inputWrap}>
-        <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SearchIcon color={theme.colors.base} />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          value={searchTerm}
-          onChangeText={handleChange}
-        />
-        {searchTerm.length > 0 && (
-          <TouchableOpacity onPress={clearButton}>
-            <CircleCloseIcon color={theme.colors.base} />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
+            <BackIcon color={theme.colors.base} />
           </TouchableOpacity>
-        )}
-      </View>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>Member Detail</Text>
+          </View>
+        </View>
+        <CustomTab
+          tabName={['Members', 'Moderators']}
+          onTabChange={handleTabChange}
+        />
+        <View style={styles.inputWrap}>
+          <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
+            <SearchIcon color={theme.colors.base} />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={searchTerm}
+            onChangeText={handleChange}
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={clearButton}>
+              <CircleCloseIcon color={theme.colors.base} />
+            </TouchableOpacity>
+          )}
+        </View>
 
-      <FlatList
-        data={sectionedUserList}
-        renderItem={renderItem}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        keyExtractor={(item) => item.userId}
-      />
-      <MemberActionModal
-        isVisible={actionModalVisible}
-        setIsVisible={setActionModalVisible}
-        userId={selectedUser?.userId as string}
-        channelId={channelID}
-        hasModeratorPermission={permission}
-        isInModeratorTab={tabIndex === 2}
-        isChannelModerator={isSelectedUserModerator}
-      />
-    </View>
+        <FlatList
+          data={sectionedUserList}
+          renderItem={renderItem}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          keyExtractor={(item) => item.userId}
+        />
+        <MemberActionModal
+          isVisible={actionModalVisible}
+          setIsVisible={setActionModalVisible}
+          userId={selectedUser?.userId as string}
+          channelId={channelID}
+          hasModeratorPermission={permission}
+          isInModeratorTab={tabIndex === 2}
+          isChannelModerator={isSelectedUserModerator}
+        />
+      </View>
+    </SafeAreaView>
   );
 }

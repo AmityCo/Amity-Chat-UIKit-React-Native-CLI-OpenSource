@@ -54,13 +54,8 @@ export default function App() {
     if (permissionGranted) {
       messaging()
         .registerDeviceForRemoteMessages()
-        .then(() =>
-          Platform.select({
-            ios: messaging().getAPNSToken(),
-            android: messaging().getToken(),
-          })
-        )
-        .then(async (token) => {
+        .then(() => messaging().getToken())
+        .then((token) => {
           setFcmToken(token);
         })
         .catch((error) => {
@@ -92,8 +87,6 @@ export default function App() {
 
     return () => unsubscribe?.();
   }, [permissionGranted]);
-
-  if (!fcmToken) return;
 
   return (
     <AmityUiKitProvider

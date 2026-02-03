@@ -10,6 +10,7 @@ import { BackIcon } from '../../svg/BackIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { useChannelPermission } from '../../hooks/useChannelPermission';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ChatDetailProps {
   navigation: any;
@@ -133,28 +134,30 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
   const data = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-          <BackIcon color={theme.colors.base} />
-        </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>Chat Detail</Text>
-        </View>
-      </View>
-      {channelType === 'conversation' ? (
-        <TouchableOpacity style={styles.rowContainer} onPress={flagUser}>
-          <View style={styles.ChatSettingContainer}>
-            <Text style={styles.reportChatLabel}>Report User</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
+            <BackIcon color={theme.colors.base} />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>Chat Detail</Text>
           </View>
-        </TouchableOpacity>
-      ) : (
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      )}
-    </View>
+        </View>
+        {channelType === 'conversation' ? (
+          <TouchableOpacity style={styles.rowContainer} onPress={flagUser}>
+            <View style={styles.ChatSettingContainer}>
+              <Text style={styles.reportChatLabel}>Report User</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 };

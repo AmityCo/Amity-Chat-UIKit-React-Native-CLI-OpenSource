@@ -16,6 +16,7 @@ import type { UserInterface } from '../../types/user.interface';
 import SelectedUserHorizontal from '../../components/SelectedUserHorizontal';
 import UserItem from '../../components/UserItem';
 import { useStyles } from './styles';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type SelectUserList = {
   title: string;
@@ -123,54 +124,56 @@ export default function SelectMembers() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeButton}>
-          <SvgXml xml={closeIcon()} width="14" height="14" />
-        </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>Select Member</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeButton}>
+            <SvgXml xml={closeIcon()} width="14" height="14" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>Select Member</Text>
+          </View>
+          <TouchableOpacity disabled={selectedUserList.length === 0}>
+            <Text
+              style={[
+                selectedUserList.length > 0
+                  ? styles.doneText
+                  : styles.disabledDone,
+              ]}
+            >
+              Done
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity disabled={selectedUserList.length === 0}>
-          <Text
-            style={[
-              selectedUserList.length > 0
-                ? styles.doneText
-                : styles.disabledDone,
-            ]}
-          >
-            Done
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputWrap}>
-        <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SvgXml xml={searchIcon} width="20" height="20" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          value={searchTerm}
-          onChangeText={handleChange}
+        <View style={styles.inputWrap}>
+          <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
+            <SvgXml xml={searchIcon} width="20" height="20" />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={searchTerm}
+            onChangeText={handleChange}
+          />
+          <TouchableOpacity onPress={clearButton}>
+            <SvgXml xml={circleCloseIcon} width="20" height="20" />
+          </TouchableOpacity>
+        </View>
+        {selectedUserList.length > 0 ? (
+          <SelectedUserHorizontal
+            users={selectedUserList}
+            onDeleteUserPressed={onDeleteUserPressed}
+          />
+        ) : (
+          <View />
+        )}
+        <FlatList
+          data={sectionedUserList}
+          renderItem={renderItem}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          keyExtractor={(item) => item.userId}
         />
-        <TouchableOpacity onPress={clearButton}>
-          <SvgXml xml={circleCloseIcon} width="20" height="20" />
-        </TouchableOpacity>
       </View>
-      {selectedUserList.length > 0 ? (
-        <SelectedUserHorizontal
-          users={selectedUserList}
-          onDeleteUserPressed={onDeleteUserPressed}
-        />
-      ) : (
-        <View />
-      )}
-      <FlatList
-        data={sectionedUserList}
-        renderItem={renderItem}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        keyExtractor={(item) => item.userId}
-      />
-    </View>
+    </SafeAreaView>
   );
 }

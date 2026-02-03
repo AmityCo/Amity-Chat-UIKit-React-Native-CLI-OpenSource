@@ -26,6 +26,7 @@ import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { RootState } from '../../redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import recentChatSlice from '../../redux/slices/RecentChatSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RecentChat() {
   const { client, isConnected, error: loginError, sessionState } = useAuth();
@@ -44,27 +45,11 @@ export default function RecentChat() {
 
   const flatListRef = useRef(null);
 
-  const [channelData, setChannelData] = useState<Amity.LiveCollection<Amity.Channel>>();
+  const [channelData, setChannelData] =
+    useState<Amity.LiveCollection<Amity.Channel>>();
   const { data: channels = [], onNextPage, hasNextPage } = channelData ?? {};
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
-  const header = (
-    <View style={styles.topBar}>
-      <CustomText style={styles.titleText}>Chat</CustomText>
-      <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-        <AddChatIcon color={theme.colors.base} />
-      </TouchableOpacity>
-    </View>
-  );
-
-  // Avoid calling setOptions repeatedly — only when necessary
-  useMemo(() => {
-    navigation.setOptions({
-      header: () => header,
-      headerTitle: '',
-    });
-  }, [navigation, header]);
 
   useEffect(() => {
     if (sessionState === 'terminated') {
@@ -160,7 +145,7 @@ export default function RecentChat() {
             userId: users[0].userId,
             displayName: users[0].displayName as string,
             avatarFileId: users[0].avatarFileId as string,
-            avatarCustomUrl: users[0]?.avatarCustomUrl
+            avatarCustomUrl: users[0]?.avatarCustomUrl,
           };
 
           navigation.navigate('ChatRoom', {
@@ -174,7 +159,7 @@ export default function RecentChat() {
               userId: item.userId,
               displayName: item.displayName,
               avatarFileId: item.avatarFileId,
-              avatarCustomUrl: item?.avatarCustomUrl
+              avatarCustomUrl: item?.avatarCustomUrl,
             };
           });
           const groupChatObject: IGroupChatObject = {
@@ -247,14 +232,22 @@ export default function RecentChat() {
   };
 
   return (
-    <View style={styles.chatContainer}>
-      {renderTabView()}
-      {renderRecentChat}
-      <AddMembersModal
-        onFinish={handleOnFinish}
-        onClose={handleCloseModal}
-        visible={isModalVisible}
-      />
-    </View>
+    <SafeAreaView style={styles.chatContainer} edges={['top']}>
+      <View style={styles.chatContainer}>
+        <View style={styles.topBar}>
+          <CustomText style={styles.titleText}>Chat</CustomText>
+          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+            <AddChatIcon color={theme.colors.base} />
+          </TouchableOpacity>
+        </View>
+        {renderTabView()}
+        {renderRecentChat}
+        <AddMembersModal
+          onFinish={handleOnFinish}
+          onClose={handleCloseModal}
+          visible={isModalVisible}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
