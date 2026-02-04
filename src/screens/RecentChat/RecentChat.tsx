@@ -1,4 +1,4 @@
-import React, { type ReactElement, useMemo, useRef } from 'react';
+import React, { type ReactElement, useCallback, useMemo, useRef } from 'react';
 
 import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 
@@ -13,7 +13,7 @@ import moment from 'moment';
 
 import { useStyles } from './styles';
 import CustomText from '../../components/CustomText';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LoadingIndicator from '../../components/LoadingIndicator/index';
 import AddMembersModal from '../../components/AddMembersModal';
@@ -61,13 +61,17 @@ export default function RecentChat() {
     }
   }, [sessionState, loginError]);
 
-  useEffect(() => {
-    let unsubscibe;
+  useFocusEffect(
+    useCallback(() => {
+      let unsubscribe: (() => void) | undefined;
 
-    try {
-      if (isConnected) {
-        if (connectionState === 'connected') {
-          unsubscibe = ChannelRepository.getChannels(
+      if (isConnected && connectionState === 'connected') {
+        setLoadChannel(true);
+      }
+
+      try {
+        if (isConnected && connectionState === 'connected') {
+          unsubscribe = ChannelRepository.getChannels(
             {
               sortBy: 'lastActivity',
               limit: 15,
@@ -83,15 +87,15 @@ export default function RecentChat() {
             }
           );
         }
+      } catch (error) {
+        console.log('error query channels', error);
       }
-    } catch (error) {
-      console.log('error query channels', error);
-    }
 
-    return () => {
-      unsubscibe?.();
-    };
-  }, [isConnected, connectionState]);
+      return () => {
+        unsubscribe?.();
+      };
+    }, [isConnected, connectionState])
+  );
 
   useEffect(() => {
     const formattedChannelObjects: IChatListProps[] = channels.map(
