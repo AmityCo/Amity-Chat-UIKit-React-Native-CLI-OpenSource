@@ -1,26 +1,25 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export const useStyles = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: 'white',
-      paddingTop: Platform.OS === 'android' ? 35 : 10, // Adjust for Android status bar
     },
     header: {
-      paddingTop: Platform.OS === 'ios' ? 50 : 20, // Adjust for iOS notch
+      paddingTop: 20, // Adjust for iOS notch
       zIndex: 1,
       padding: 12,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
     },
     closeButton: {
       padding: 3,
     },
     headerTextContainer: {
       flex: 1,
-      flexDirection:'row',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -64,7 +63,7 @@ export const useStyles = () => {
       backgroundColor: '#D9E5FC',
     },
     categoryIcon: {
-      alignItems: 'center'
+      alignItems: 'center',
     },
     LoadingIndicator: {
       paddingVertical: 20,
@@ -91,12 +90,12 @@ export const useStyles = () => {
       paddingBottom: 110,
       marginTop: 10,
     },
-    doneText:{
-      color: '#1054DE'
+    doneText: {
+      color: '#1054DE',
     },
-    disabledDone:{
-      opacity: 0.5
-    }
+    disabledDone: {
+      opacity: 0.5,
+    },
   });
   return styles;
-}
+};

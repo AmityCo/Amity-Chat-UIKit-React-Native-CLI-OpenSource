@@ -325,7 +325,8 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         displayName: oneOnOneChatObject[targetIndex]?.user
           ?.displayName as string,
         avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
-        avatarCustomUrl: oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl ?? '',
+        avatarCustomUrl:
+          oneOnOneChatObject[targetIndex]?.user?.avatarCustomUrl ?? '',
       };
       setChatReceiver(chatReceiver);
     }
@@ -443,7 +444,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               user: {
                 _id: userObject.data.userId ?? '',
                 name: userObject?.data?.displayName ?? '',
-                avatar:  userObject?.data?.avatar?.fileUrl ?? '',
+                avatar: userObject?.data?.avatar?.fileUrl ?? '',
               },
               messageType: item.dataType,
               isDeleted: item.isDeleted as boolean,
@@ -460,7 +461,9 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               user: {
                 _id: userObject.data.userId ?? '',
                 name: userObject?.data?.displayName ?? '',
-                avatar: userObject?.data?.avatarCustomUrl ? userObject?.data?.avatarCustomUrl : userObject?.data?.avatar?.fileUrl ?? '',
+                avatar: userObject?.data?.avatarCustomUrl
+                  ? userObject?.data?.avatarCustomUrl
+                  : userObject?.data?.avatar?.fileUrl ?? '',
               },
               messageType: item.dataType,
               isDeleted: item.isDeleted as boolean,
@@ -955,11 +958,13 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
             <BackButton onPress={goBack} />
 
             {chatReceiver ? (
-              (chatReceiver?.avatarFileId || chatReceiver?.avatarCustomUrl) ? (
+              chatReceiver?.avatarFileId || chatReceiver?.avatarCustomUrl ? (
                 <Image
                   style={styles.avatar}
                   source={{
-                    uri: chatReceiver?.avatarCustomUrl ? chatReceiver?.avatarCustomUrl : `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                    uri: chatReceiver?.avatarCustomUrl
+                      ? chatReceiver?.avatarCustomUrl
+                      : `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
                   }}
                 />
               ) : (

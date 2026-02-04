@@ -22,13 +22,12 @@ export const useStyles = () => {
       backgroundColor: '#1054DE',
     },
     topBar: {
-      paddingTop: Platform.OS === 'ios' ? 50 : 20,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: theme.colors.background,
       paddingHorizontal: 20,
-      paddingVertical: 20,
+      paddingVertical: 10,
     },
     addChatIcon: {
       width: 24,
@@ -69,11 +68,10 @@ export const useStyles = () => {
     chatContainer: {
       flex: 1,
       backgroundColor: theme.colors.background,
-
     },
     chatListContainer: {
       paddingBottom: Platform.OS === 'ios' ? 65 : 35,
-      flex: 1
+      flex: 1,
     },
     chatListEmptyState: {
       flex: 1,
