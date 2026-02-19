@@ -16,7 +16,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amityco/react-native-cli-chat-ui-kit-example@workspace:example"
   dependencies:
-    "@amityco/ts-sdk-react-native": 7.13.1-8a2d6314.0
+    "@amityco/ts-sdk-react-native": ^7.15.0
     "@babel/core": ^7.25.2
     "@babel/preset-env": ^7.25.3
     "@babel/runtime": ^7.25.0
@@ -49,7 +49,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amityco/react-native-cli-chat-ui-kit@workspace:."
   dependencies:
-    "@amityco/ts-sdk-react-native": 7.13.1-8a2d6314.0
+    "@amityco/ts-sdk-react-native": ^7.15.0
     "@commitlint/config-conventional": ^17.0.2
     "@evilmartians/lefthook": ^1.5.0
     "@react-native-async-storage/async-storage": ^2.2.0
@@ -90,7 +90,7 @@ __metadata:
     turbo: ^1.10.7
     typescript: ^5.2.2
   peerDependencies:
-    "@amityco/ts-sdk-react-native": 7.13.1-8a2d6314.0
+    "@amityco/ts-sdk-react-native": "*"
     "@react-native-firebase/app": ^20.1.0
     "@react-native-firebase/messaging": ^20.1.0
     "@react-navigation/native": "*"
@@ -104,9 +104,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@amityco/ts-sdk-react-native@npm:7.13.1-8a2d6314.0":
-  version: 7.13.1-8a2d6314.0
-  resolution: "@amityco/ts-sdk-react-native@npm:7.13.1-8a2d6314.0"
+"@amityco/ts-sdk-react-native@npm:^7.15.0":
+  version: 7.15.0
+  resolution: "@amityco/ts-sdk-react-native@npm:7.15.0"
   dependencies:
     "@react-native-async-storage/async-storage": ^1.17.7
     "@react-native-community/netinfo": ^9.4.1
@@ -124,7 +124,7 @@ __metadata:
     ts-jest: ^28.0.3
   peerDependencies:
     react-native: ">=0.70.13"
-  checksum: af8f2357002b97f087a6183d844761b35465435c9cb905152778ee9bc7a6fdb1f9120d486d1cebad0534e7c046a3ae5333ab6704394c33a20f50557c43e6c766
+  checksum: d76d98a3f68ca0716dd6d584687d397b5b092d648ac4989fbef12b0f8df5b737e14fe367085d8b859eb841c07890d8b72f148fb2fcc71602e7fc1aefd02b0c86
   languageName: node
   linkType: hard
 
