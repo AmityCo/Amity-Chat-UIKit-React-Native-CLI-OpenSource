@@ -1,4 +1,7 @@
-import { UserRepository } from '@amityco/ts-sdk-react-native';
+import {
+  SearchUsersByEnum,
+  UserRepository,
+} from '@amityco/ts-sdk-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   TouchableOpacity,
@@ -36,7 +39,11 @@ export default function SelectMembers() {
 
   const queryAccounts = (text: string = '') => {
     UserRepository.searchUserByDisplayName(
-      { displayName: text, limit: 15 },
+      {
+        displayName: text,
+        limit: 15,
+        searchBy: [SearchUsersByEnum.DISPLAY_NAME],
+      },
       (data) => {
         setUsersObject(data);
       }
