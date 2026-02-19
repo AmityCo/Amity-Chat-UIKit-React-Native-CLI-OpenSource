@@ -1,4 +1,7 @@
-import { UserRepository } from '@amityco/ts-sdk-react-native';
+import {
+  SearchUsersByEnum,
+  UserRepository,
+} from '@amityco/ts-sdk-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   TouchableOpacity,
@@ -52,7 +55,11 @@ const AddMembersModal = ({
 
   const queryAccounts = (text: string = '') => {
     UserRepository.searchUserByDisplayName(
-      { displayName: text, limit: 20 },
+      {
+        displayName: text,
+        limit: 20,
+        searchBy: [SearchUsersByEnum.DISPLAY_NAME],
+      },
       (data) => {
         setUsersObject(data);
       }
