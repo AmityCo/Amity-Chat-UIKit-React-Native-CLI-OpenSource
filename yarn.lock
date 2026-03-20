@@ -90,7 +90,7 @@ __metadata:
     turbo: ^1.10.7
     typescript: ^5.2.2
   peerDependencies:
-    "@amityco/ts-sdk-react-native": "*"
+    "@amityco/ts-sdk-react-native": ^7.15.0
     "@react-native-firebase/app": ^20.1.0
     "@react-native-firebase/messaging": ^20.1.0
     "@react-navigation/native": "*"
