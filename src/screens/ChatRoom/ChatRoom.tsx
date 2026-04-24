@@ -430,6 +430,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         messagesArr.map(async (item) => {
           if ((item?.data as Record<string, any>)?.fileId) {
             const { userObject } = await getUserInfo(item.creatorId);
+            console.log('userObject: ', userObject);
             const fileId = (item?.data as Record<string, any>).fileId;
 
             return {
@@ -443,7 +444,7 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
               user: {
                 _id: userObject.data.userId ?? '',
                 name: userObject?.data?.displayName ?? '',
-                avatar:  userObject?.data?.avatar?.fileUrl ?? '',
+                avatar: userObject?.data?.avatarCustomUrl ? userObject?.data?.avatarCustomUrl : userObject?.data?.avatar?.fileUrl ?? '',
               },
               messageType: item.dataType,
               isDeleted: item.isDeleted as boolean,
