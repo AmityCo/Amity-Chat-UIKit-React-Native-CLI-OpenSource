@@ -430,7 +430,6 @@ const ChatRoom = ({ defaultChannelId = '' }) => {
         messagesArr.map(async (item) => {
           if ((item?.data as Record<string, any>)?.fileId) {
             const { userObject } = await getUserInfo(item.creatorId);
-            console.log('userObject: ', userObject);
             const fileId = (item?.data as Record<string, any>).fileId;
 
             return {
